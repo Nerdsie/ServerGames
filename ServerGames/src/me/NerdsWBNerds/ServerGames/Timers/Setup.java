@@ -19,19 +19,19 @@ public class Setup extends CurrentState implements Runnable{
 	public void run() {
 		if(plugin.state == State.SET_UP){
 			if(time == 60){
-				plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1 Minute remaining.");
+				plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1 minute remaining.");
 			}
 			if(time == 45){
-				plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 45 Seconds remaining.");
+				plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 45 seconds remaining.");
 			}
 			if(time == 30){
-				plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 30 Seconds remaining.");
+				plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 30 seconds remaining.");
 			}
 			if(time == 15){
-				plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 Seconds remaining.");
+				plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 seconds remaining.");
 			}
 			if(time <= 10 && time > 0){
-				plugin.server.broadcastMessage(GOLD + "[ServerGames] " + GREEN + time +" Seconds remaining.");
+				plugin.server.broadcastMessage(GOLD + "[ServerGames] " + GREEN + time +" seconds remaining.");
 			}
 			if(time == 0){
 				plugin.state = State.IN_GAME;

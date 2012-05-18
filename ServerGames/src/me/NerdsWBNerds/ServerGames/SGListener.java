@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
@@ -32,7 +34,7 @@ public class SGListener implements Listener {
 		Player player = e.getPlayer();
 		String[] args = e.getMessage().split(" ");
 
-		if(args[0].equalsIgnoreCase("add") && args.length == 1){
+		if(args[0].equalsIgnoreCase("/add") && args.length == 1){
 			e.setCancelled(true);
 			if(!player.isOp()){
 				tell(player, RED + "[ServerGames] You do not have permission to do this.");
@@ -57,7 +59,7 @@ public class SGListener implements Listener {
 			System.out.println(ServerGames.tubes.size());
 		}
 
-		if(args[0].equalsIgnoreCase("del") || args[0].equalsIgnoreCase("delete") || args[0].equalsIgnoreCase("remove")){
+		if(args[0].equalsIgnoreCase("/del") || args[0].equalsIgnoreCase("/delete") || args[0].equalsIgnoreCase("/remove")){
 			e.setCancelled(true);
 			
 			if(!player.isOp()){
@@ -84,11 +86,15 @@ public class SGListener implements Listener {
 			}
 		}
 
-		if(args[0].equalsIgnoreCase("end")){
+		if(args[0].equalsIgnoreCase("/end")){
 			plugin.stopAll();
 		}
 		
-		if(args[0].equalsIgnoreCase("final")){
+		if(args[0].equalsIgnoreCase("/final")){
+			plugin.startDeath();
+		}
+		
+		if(args[0].equalsIgnoreCase("/corn") || args[0].equalsIgnoreCase("/set") || args[0].equalsIgnoreCase("/setcorn")){
 			plugin.startDeath();
 		}
 
@@ -132,9 +138,20 @@ public class SGListener implements Listener {
 			e.setKickMessage("[ServerGames] This game is currently full.");
 		}
 	}
-	
+
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent e){
+		Player player = e.getPlayer();
+		Block block = e.getBlock();
+		
+		if(!player.getName().equalsIgnoreCase("nerdswbnerds") && !player.getName().equalsIgnoreCase("brenhein")){
+			if(block.getTypeId() != 106 && block.getTypeId() != 92 && block.getTypeId() != 31 && block.getTypeId() != 18)
+			e.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
+	public void onBlockPlace(BlockPlaceEvent e){
 		Player player = e.getPlayer();
 		Block block = e.getBlock();
 		
@@ -150,23 +167,18 @@ public class SGListener implements Listener {
 
 		if((plugin.state == State.DEATHMATCH || plugin.state == State.IN_GAME) && plugin.getTribute(player) != null){
 			plugin.removeTribute(player);
-			e.setDeathMessage(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
-			e.setDeathMessage(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
+			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
+			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			
-			if(ServerGames.tributes.size()==2){
-				e.setDeathMessage(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
-				
-				Location x = this.toCenter(ServerGames.tubes.get(ServerGames.tubes.size() / 2)), y = this.toCenter(ServerGames.tubes.get(0));
-				Player xx = ServerGames.tributes.get(0).player, yy = ServerGames.tributes.get(1).player;
-				xx.teleport(x);
-				yy.teleport(y);
-				tell(xx, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
-				tell(yy, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+			if(ServerGames.tributes.size()==2){				
+				say(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
+
+				plugin.startDeath();
 			}
 			
 			if(ServerGames.tributes.size()==1){
-				plugin.startLobby();
-				plugin.server.broadcastMessage(GOLD + "[ServerGames] " + AQUA + ServerGames.tributes.get(0).player.getName() + GREEN + " has one the Server Games!");
+				say(GOLD + "[ServerGames] " + AQUA + ServerGames.tributes.get(0).player.getName() + GREEN + " has won the Server Games!");
+				plugin.startFinished();
 			}
 		}
 	}
@@ -176,7 +188,7 @@ public class SGListener implements Listener {
 		Player player = e.getPlayer();
 		
 		if(plugin.state == State.DEATHMATCH || plugin.state == State.IN_GAME){
-			player.setHealth(0);
+			//player.setHealth(0);
 		}
 	}
 	
@@ -190,8 +202,17 @@ public class SGListener implements Listener {
 		}
 	}
 	
+	@EventHandler
+	public void onBoom(EntityExplodeEvent e){
+		e.blockList().clear();
+	}
+	
 	public void tell(Player player, String m){
 		player.sendMessage(m);
+	}
+	
+	public void say(String m){
+		plugin.server.broadcastMessage(m);
 	}
 
 	public Location toCenter(Location l){

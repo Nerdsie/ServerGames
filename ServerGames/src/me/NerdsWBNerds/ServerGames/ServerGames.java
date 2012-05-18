@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
 import me.NerdsWBNerds.ServerGames.Timers.Deathmatch;
+import me.NerdsWBNerds.ServerGames.Timers.Finished;
 import me.NerdsWBNerds.ServerGames.Timers.Game;
 import me.NerdsWBNerds.ServerGames.Timers.Lobby;
 import me.NerdsWBNerds.ServerGames.Timers.CurrentState;
@@ -28,7 +29,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ServerGames extends JavaPlugin implements Listener{
-	public String path = "plugins/ServerGames" + File.separator + "Tubes.loc";
+	public String path = "plugins/ServerGames";
 	
 	public SGListener Listener = new SGListener(this);
 	public Server server;
@@ -40,6 +41,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public static ArrayList<Location> tubes = new ArrayList<Location>();
 	public static ArrayList<Tribute> tributes = new ArrayList<Tribute>();
 	public static ArrayList<Spectator> spectators = new ArrayList<Spectator>();
+	public static Location cornacoptia = null;
 	
 	public void onEnable(){
 		server = this.getServer();
@@ -47,8 +49,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 
 		server.getPluginManager().registerEvents(Listener, this);
 		
-		File file = new File(path);
-		new File("plugins/ServerGames").mkdir();
+		File file = new File(path + File.separator + "Tubes.loc");
+		new File(path).mkdir();
 		if(file.exists()){
 			loadConf();
 		}
@@ -109,10 +111,26 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void startDeath(){
+		Location x = this.toCenter(ServerGames.tubes.get(ServerGames.tubes.size() / 2)), y = this.toCenter(ServerGames.tubes.get(0));
+		Player xx = ServerGames.tributes.get(0).player, yy = ServerGames.tributes.get(1).player;
+		xx.teleport(x);
+		yy.teleport(y);
+		Listener.tell(xx, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+		Listener.tell(yy, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+		
 		cancelTasks();
 		
 		state = State.DEATHMATCH;
 		game = new Deathmatch(this);
+		
+		startTimer();
+	}
+	
+	public void startFinished(){
+		cancelTasks();
+		
+		state = State.DONE;
+		game = new Finished(this);
 		
 		startTimer();
 	}
@@ -128,8 +146,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void saveConf(){
-		File file = new File(path);
-		new File("plugins/ServerGames").mkdir();
+		File file = new File(path + File.separator + "Tubes.loc");
+		new File(path).mkdir();
 		if(!file.exists()){
 			try {
 				file.createNewFile();
@@ -145,7 +163,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 		}
 		
 		try{
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path));
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path + File.separator + "Tubes.loc"));
 			oos.writeObject(t);
 			oos.flush();
 			oos.close();
@@ -157,7 +175,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	@SuppressWarnings("unchecked")
 	public void loadConf(){
 		try{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path));
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path + File.separator + "Tubes.loc"));
 			Object result = ois.readObject();
 
 			ArrayList<String> t = new ArrayList<String>();
