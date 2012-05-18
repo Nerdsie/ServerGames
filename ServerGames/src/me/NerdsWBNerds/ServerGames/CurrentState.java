@@ -1,12 +1,11 @@
 package me.NerdsWBNerds.ServerGames;
 
-public class GameState implements Runnable {
+public class CurrentState implements Runnable {
 	enum State{
 		LOBBY, IN_GAME, DEATHMATCH, SET_UP
 	}
-
-	@Override
+	
 	public void run() {
 		
-	}
+	}		
 }
