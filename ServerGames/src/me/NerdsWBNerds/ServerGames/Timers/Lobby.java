@@ -1,17 +1,15 @@
-package me.NerdsWBNerds.ServerGames;
+package me.NerdsWBNerds.ServerGames.Timers;
 
 import static org.bukkit.ChatColor.*;
 
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
+import me.NerdsWBNerds.ServerGames.ServerGames;
 
-public class Countdown extends CurrentState{
-	int i = 0;
-	int time = 15;
+public class Lobby extends CurrentState{
 	ServerGames plugin;
 	
-	public Countdown(ServerGames p){
+	public Lobby(ServerGames p){
 		plugin = p;
+		time = 15;
 	}
 	
 	@Override
@@ -37,25 +35,7 @@ public class Countdown extends CurrentState{
 		}if(time == 5){
 			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 5 Seconds remaining.");
 		}if(time == 0){
-			
-			for(Player p : plugin.server.getOnlinePlayers()){
-				if(i >= ServerGames.tubes.size())
-					i = 0;
-				
-				Location to = ServerGames.tubes.get(i);
-				p.teleport(plugin.toCenter(to));
-				p.setSprinting(false);
-				p.setSneaking(false);
-				p.setPassenger(null);
-				
-				i++;
-			}
-			
-			
-			plugin.state = State.SET_UP;
-			plugin.cancelTasks();
-			plugin.game = new Game(plugin);
-			plugin.getServer().getScheduler().scheduleAsyncRepeatingTask(plugin, plugin.game, 20L, 20L);
+			plugin.startSetup();
 		}
 		
 		time--;

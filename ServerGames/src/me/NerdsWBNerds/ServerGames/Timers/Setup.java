@@ -1,16 +1,18 @@
-package me.NerdsWBNerds.ServerGames;
+package me.NerdsWBNerds.ServerGames.Timers;
 
 import static org.bukkit.ChatColor.GOLD;
 import static org.bukkit.ChatColor.GREEN;
 
+import me.NerdsWBNerds.ServerGames.ServerGames;
+
 import org.bukkit.entity.Player;
 
-public class Game extends CurrentState implements Runnable{
+public class Setup extends CurrentState implements Runnable{
 	ServerGames plugin;
-	int time = 15;
 	
-	public Game(ServerGames p){
+	public Setup(ServerGames p){
 		plugin = p;
+		time = 15;
 	}
 	
 	@Override

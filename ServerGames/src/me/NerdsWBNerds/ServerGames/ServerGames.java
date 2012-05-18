@@ -1,5 +1,8 @@
 package me.NerdsWBNerds.ServerGames;
 
+import static org.bukkit.ChatColor.GOLD;
+import static org.bukkit.ChatColor.GREEN;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,9 +12,14 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import me.NerdsWBNerds.ServerGames.CurrentState.State;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
+import me.NerdsWBNerds.ServerGames.Timers.Deathmatch;
+import me.NerdsWBNerds.ServerGames.Timers.Game;
+import me.NerdsWBNerds.ServerGames.Timers.Lobby;
+import me.NerdsWBNerds.ServerGames.Timers.CurrentState;
+import me.NerdsWBNerds.ServerGames.Timers.Setup;
+import me.NerdsWBNerds.ServerGames.Timers.CurrentState.State;
 
 import org.bukkit.Location;
 import org.bukkit.event.Listener;
@@ -42,7 +50,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 		File file = new File(path);
 		new File("plugins/ServerGames").mkdir();
 		if(file.exists()){
-			load();
+			loadConf();
 		}
 		
 		for(Player p : server.getOnlinePlayers()){
@@ -53,22 +61,92 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public void onDisable(){
 		this.cancelTasks();
 		
-		save();
+		saveConf();
 	}
 	
-	public void save(){
+	public void startLobby(){
+		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Countdown started.");
+
+		cancelTasks();
+		
+		state = State.LOBBY;
+		game = new Lobby(this);
+		
+		startTimer();
+	}
+	
+	public void startSetup(){
+		int i = 0;
+		
+		for(Player p : server.getOnlinePlayers()){
+			if(i >= ServerGames.tubes.size())
+				i = 0;
+			
+			Location to = ServerGames.tubes.get(i);
+			p.teleport(toCenter(to));
+			p.setSprinting(false);
+			p.setSneaking(false);
+			p.setPassenger(null);
+			
+			i++;
+		}
+		
+		cancelTasks();
+		
+		state = State.SET_UP;
+		game = new Setup(this);
+		
+		startTimer();
+	}
+	
+	public void startGame(){
+		cancelTasks();
+		
+		state = State.IN_GAME;
+		game = new Game(this);
+		
+		startTimer();
+	}
+	
+	public void startDeath(){
+		cancelTasks();
+		
+		state = State.DEATHMATCH;
+		game = new Deathmatch(this);
+		
+		startTimer();
+	}
+	
+	public void stopAll(){
+		game = null;
+		state = null;
+		cancelTasks();
+	}
+	
+	public void startTimer(){
+		getServer().getScheduler().scheduleAsyncRepeatingTask(this, game, 20L, 20L);
+	}
+	
+	public void saveConf(){
 		File file = new File(path);
 		new File("plugins/ServerGames").mkdir();
-		   if(!file.exists()){
-		   	try {
+		if(!file.exists()){
+			try {
 				file.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+		 
+		ArrayList<String> t = new ArrayList<String>();
+		
+		for(Location x: tubes){
+			t.add(x.getWorld().getName() + "," + x.getBlockX() + "," + x.getBlockY() + "," + x.getBlockZ());
+		}
+		
 		try{
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path));
-			oos.writeObject(tubes);
+			oos.writeObject(t);
 			oos.flush();
 			oos.close();
 		}catch(Exception e){
@@ -77,12 +155,23 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void load(){
+	public void loadConf(){
 		try{
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path));
 			Object result = ois.readObject();
-			tubes = (ArrayList<Location>)result;
-		}catch(Exception e){}
+
+			ArrayList<String> t = new ArrayList<String>();
+			t = (ArrayList<String>)result;
+			
+			tubes = new ArrayList<Location>();
+			
+			for(String x: t){
+				String[] split = x.split(",");
+				tubes.add(new Location(server.getWorld(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3])));
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	public Tribute getTribute(Player player){
@@ -147,5 +236,9 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public void removeSpectator(Player p){
 		spectators.remove(getSpectator(p));
+	}
+	
+	public int toInt(String s){
+		return Integer.parseInt(s);
 	}
 }

@@ -1,9 +1,11 @@
-package me.NerdsWBNerds.ServerGames;
+package me.NerdsWBNerds.ServerGames.Timers;
 
 public class CurrentState implements Runnable {
-	enum State{
+	public enum State{
 		LOBBY, IN_GAME, DEATHMATCH, SET_UP
 	}
+	
+	int time = 0;
 	
 	public void run() {
 		

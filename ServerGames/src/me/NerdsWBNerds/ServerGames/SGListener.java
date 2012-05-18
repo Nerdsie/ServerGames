@@ -1,13 +1,16 @@
 package me.NerdsWBNerds.ServerGames;
 
-import me.NerdsWBNerds.ServerGames.CurrentState.State;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
+import me.NerdsWBNerds.ServerGames.Timers.Lobby;
+import me.NerdsWBNerds.ServerGames.Timers.CurrentState.State;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
@@ -29,7 +32,7 @@ public class SGListener implements Listener {
 		Player player = e.getPlayer();
 		String[] args = e.getMessage().split(" ");
 
-		if(args[0].equalsIgnoreCase("/sg") && args[1].equalsIgnoreCase("add") && args.length == 2){
+		if(args[0].equalsIgnoreCase("add") && args.length == 1){
 			e.setCancelled(true);
 			if(!player.isOp()){
 				tell(player, RED + "[ServerGames] You do not have permission to do this.");
@@ -45,6 +48,7 @@ public class SGListener implements Listener {
 				Location l = player.getLocation();
 				ServerGames.tubes.add(toCenter(l));
 
+				plugin.saveConf();
 				tell(player, GOLD + "[ServerGames]" + GREEN + " Tube location added.");
 			}else{
 				tell(player, RED + "[ServerGames] You have reached a max, you must delete a tube location.");
@@ -53,7 +57,7 @@ public class SGListener implements Listener {
 			System.out.println(ServerGames.tubes.size());
 		}
 
-		if(args[0].equalsIgnoreCase("/sg") && args[1].equalsIgnoreCase("del")){
+		if(args[0].equalsIgnoreCase("del") || args[0].equalsIgnoreCase("delete") || args[0].equalsIgnoreCase("remove")){
 			e.setCancelled(true);
 			
 			if(!player.isOp()){
@@ -73,21 +77,25 @@ public class SGListener implements Listener {
 				for(Location i: ServerGames.tubes){
 					if(i==check){
 						ServerGames.tubes.remove(i);
-
+						plugin.saveConf();
 						tell(player, GOLD + "[ServerGames] All tube locations at your spot have been removed.");
 					}
 				}
 			}
 		}
+
+		if(args[0].equalsIgnoreCase("end")){
+			plugin.stopAll();
+		}
 		
-		if(args[0].equalsIgnoreCase("/sg") && args[1].equalsIgnoreCase("stop")){
-			plugin.game = null;
-			plugin.state = null;
-			plugin.cancelTasks();
+		if(args[0].equalsIgnoreCase("final")){
+			plugin.startDeath();
 		}
 
 		if(args[0].equalsIgnoreCase("/start")){
 			e.setCancelled(true);
+			
+			plugin.loadConf();
 
 			if(plugin.state != null){
 				tell(player, RED + "[ServerGames] You cannot edit spawns while game is in progress.  Use /reload to stop current game.");
@@ -99,10 +107,7 @@ public class SGListener implements Listener {
 				return;
 			}
 			
-			tell(player, GOLD + "[ServerGames]" + GREEN + " Countdown started.");
-
-			plugin.game = new Countdown(plugin);
-			plugin.getServer().getScheduler().scheduleAsyncRepeatingTask(plugin, plugin.game, 20L, 20L);		
+			plugin.startLobby();
 		}
 	}
 	
@@ -129,13 +134,24 @@ public class SGListener implements Listener {
 	}
 	
 	@EventHandler
+	public void onBlockBreak(BlockBreakEvent e){
+		Player player = e.getPlayer();
+		Block block = e.getBlock();
+		
+		if(!player.getName().equalsIgnoreCase("nerdswbnerds") && !player.getName().equalsIgnoreCase("brenhein")){
+			if(block.getTypeId() != 106 && block.getTypeId() != 92 && block.getTypeId() != 31)
+			e.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
 	public void onDie(PlayerDeathEvent e){
 		Player player = e.getEntity();
 
 		if((plugin.state == State.DEATHMATCH || plugin.state == State.IN_GAME) && plugin.getTribute(player) != null){
-			e.setDeathMessage(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
-			e.setDeathMessage(GOLD + "[ServerGames]" + GREEN + " There are " +  AQUA + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			plugin.removeTribute(player);
+			e.setDeathMessage(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
+			e.setDeathMessage(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			
 			if(ServerGames.tributes.size()==2){
 				e.setDeathMessage(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
@@ -144,8 +160,13 @@ public class SGListener implements Listener {
 				Player xx = ServerGames.tributes.get(0).player, yy = ServerGames.tributes.get(1).player;
 				xx.teleport(x);
 				yy.teleport(y);
-				tell(xx, GOLD + "[ServerGames] " + GREEN + "You have maid it to the deathmatch.");
-				tell(yy, GOLD + "[ServerGames] " + GREEN + "You have maid it to the deathmatch.");
+				tell(xx, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+				tell(yy, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+			}
+			
+			if(ServerGames.tributes.size()==1){
+				plugin.startLobby();
+				plugin.server.broadcastMessage(GOLD + "[ServerGames] " + AQUA + ServerGames.tributes.get(0).player.getName() + GREEN + " has one the Server Games!");
 			}
 		}
 	}
