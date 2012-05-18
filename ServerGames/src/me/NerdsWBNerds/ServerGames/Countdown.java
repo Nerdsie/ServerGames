@@ -39,7 +39,7 @@ public class Countdown extends CurrentState{
 		}if(time == 0){
 			
 			for(Player p : plugin.server.getOnlinePlayers()){
-				if(i > ServerGames.tubes.size())
+				if(i >= ServerGames.tubes.size())
 					i = 0;
 				
 				Location to = ServerGames.tubes.get(i);
