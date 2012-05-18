@@ -15,29 +15,34 @@ public class Lobby extends CurrentState{
 	@Override
 	public void run() {
 		if(time == 60 * 4){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 4 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 4 minutes remaining.");
 		}if(time == 60 * 3.5){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 3.5 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 3.5 minutes remaining.");
 		}if(time == 60 * 3){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 3 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 3 minutes remaining.");
 		}if(time == 60 * 2.5){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 2.5 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 2.5 minutes remaining.");
 		}if(time == 60 * 2){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 2 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 2 minutes remaining.");
 		}if(time == 60 * 1.5){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1.5 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1.5 minutes remaining.");
 		}if(time == 60 * 1){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1 minute remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1 minute remaining.");
 		}if(time == 30){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 30 seconds remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 30 seconds remaining.");
 		}if(time == 15){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 seconds remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 seconds remaining.");
 		}if(time == 5){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 5 seconds remaining.");
-		}if(time == 0){
-			plugin.startSetup();
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 5 seconds remaining.");
+		}if(time == 0){		
+			if(ServerGames.tributes.size()<3){
+				ServerGames.server.broadcastMessage(RED + "[ServerGames] There must be at least 3 tributes to play. Countdown resetting.");
+				time = 60 * 2;
+			}else{
+				plugin.startSetup();
+			}
 		}
-		
+			
 		time--;
 	}
 

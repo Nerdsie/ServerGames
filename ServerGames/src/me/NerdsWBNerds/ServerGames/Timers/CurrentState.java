@@ -5,7 +5,7 @@ public class CurrentState implements Runnable {
 		LOBBY, IN_GAME, DEATHMATCH, SET_UP, DONE
 	}
 	
-	int time = 0;
+	public int time = 0;
 	
 	public void run() {
 		

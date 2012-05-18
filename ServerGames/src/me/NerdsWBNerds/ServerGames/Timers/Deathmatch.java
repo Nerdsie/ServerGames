@@ -13,13 +13,13 @@ public class Deathmatch extends CurrentState{
 	
 	public void run(){
 		if(time==2){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 2 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 2 minutes remaining.");
 			plugin.startLobby();
 		}if(time==1){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1 minute remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1 minute remaining.");
 			plugin.startLobby();
 		}if(time==0){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " This Hunger Games has no victor.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " This Hunger Games has no victor.");
 			plugin.startLobby();
 		}
 		

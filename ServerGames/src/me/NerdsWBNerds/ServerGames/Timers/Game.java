@@ -13,13 +13,13 @@ public class Game extends CurrentState{
 	
 	public void run(){
 		if(time == 60 * 45){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 45 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 45 minutes remaining.");
 		}if(time == 60 * 30){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 30 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 30 minutes remaining.");
 		}if(time == 60 * 15){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 minutes remaining.");
 		}if(time == 60 * 5){
-			plugin.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 5 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 5 minutes remaining.");
 		}if(time == 0){
 			plugin.startDeath();
 		}

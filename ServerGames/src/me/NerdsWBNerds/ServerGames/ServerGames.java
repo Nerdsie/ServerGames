@@ -32,16 +32,16 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public String path = "plugins/ServerGames";
 	
 	public SGListener Listener = new SGListener(this);
-	public Server server;
-	public Logger log;
-	
-	public State state = null;
-	public CurrentState game = null;
+	public static Server server;
+	public static Logger log;
+
 	public int max = 24;
+	public static State state = null;
+	public static CurrentState game = null;
 	public static ArrayList<Location> tubes = new ArrayList<Location>();
 	public static ArrayList<Tribute> tributes = new ArrayList<Tribute>();
 	public static ArrayList<Spectator> spectators = new ArrayList<Spectator>();
-	public static Location cornacoptia = null;
+	public static Location cornacopia = null, waiting = null;
 	
 	public void onEnable(){
 		server = this.getServer();
@@ -49,11 +49,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 
 		server.getPluginManager().registerEvents(Listener, this);
 		
-		File file = new File(path + File.separator + "Tubes.loc");
 		new File(path).mkdir();
-		if(file.exists()){
-			loadConf();
-		}
+		load();
 		
 		for(Player p : server.getOnlinePlayers()){
 			tributes.add(new Tribute(p));
@@ -63,7 +60,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public void onDisable(){
 		this.cancelTasks();
 		
-		saveConf();
+		save();
 	}
 	
 	public void startLobby(){
@@ -92,6 +89,12 @@ public class ServerGames extends JavaPlugin implements Listener{
 			
 			i++;
 		}
+
+		cornacopia.getWorld().getEntities().clear();
+		cornacopia.getWorld().setThundering(false);
+		cornacopia.getWorld().setTime(0);
+		cornacopia.getWorld().setWeatherDuration(0);
+		cornacopia.getWorld().setStorm(false);
 		
 		cancelTasks();
 		
@@ -105,6 +108,14 @@ public class ServerGames extends JavaPlugin implements Listener{
 		cancelTasks();
 		
 		state = State.IN_GAME;
+		
+		for(Player p : server.getOnlinePlayers()){
+			p.setHealth(20);
+			p.setFoodLevel(20);
+		}
+			
+		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Let the game begin!");
+
 		game = new Game(this);
 		
 		startTimer();
@@ -145,53 +156,6 @@ public class ServerGames extends JavaPlugin implements Listener{
 		getServer().getScheduler().scheduleAsyncRepeatingTask(this, game, 20L, 20L);
 	}
 	
-	public void saveConf(){
-		File file = new File(path + File.separator + "Tubes.loc");
-		new File(path).mkdir();
-		if(!file.exists()){
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		 
-		ArrayList<String> t = new ArrayList<String>();
-		
-		for(Location x: tubes){
-			t.add(x.getWorld().getName() + "," + x.getBlockX() + "," + x.getBlockY() + "," + x.getBlockZ());
-		}
-		
-		try{
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path + File.separator + "Tubes.loc"));
-			oos.writeObject(t);
-			oos.flush();
-			oos.close();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	public void loadConf(){
-		try{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path + File.separator + "Tubes.loc"));
-			Object result = ois.readObject();
-
-			ArrayList<String> t = new ArrayList<String>();
-			t = (ArrayList<String>)result;
-			
-			tubes = new ArrayList<Location>();
-			
-			for(String x: t){
-				String[] split = x.split(",");
-				tubes.add(new Location(server.getWorld(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3])));
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-
 	public Tribute getTribute(Player player){
 		for(Tribute t : tributes){
 			if(t.player == player)
@@ -258,5 +222,140 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public int toInt(String s){
 		return Integer.parseInt(s);
+	}
+
+	public void save(){
+		//////////// --------- Tubes ------------ ///////////////
+		File file = new File(path + File.separator + "Tubes.loc");
+		new File(path).mkdir();
+		if(!file.exists()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		 
+		ArrayList<String> t = new ArrayList<String>();
+		
+		for(Location x: tubes){
+			t.add(x.getWorld().getName() + "," + x.getBlockX() + "," + x.getBlockY() + "," + x.getBlockZ());
+		}
+		
+		try{
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path + File.separator + "Tubes.loc"));
+			oos.writeObject(t);
+			oos.flush();
+			oos.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+		//////////// --------- Tubes End ------------ ///////////////
+		//////////// --------- Cornacopia ------------ ///////////////
+		
+		if(cornacopia != null){
+			file = new File(path + File.separator + "Corn.loc");
+			new File(path).mkdir();
+			if(!file.exists()){
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			 
+			String c = "";
+			c = (cornacopia.getWorld().getName() + "," + cornacopia.getBlockX() + "," + cornacopia.getBlockY() + "," + cornacopia.getBlockZ());
+			
+			cornacopia.getWorld().setSpawnLocation(cornacopia.getBlockX(), cornacopia.getBlockY(), cornacopia.getBlockZ());
+			
+			try{
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path + File.separator + "Corn.loc"));
+				oos.writeObject(c);
+				oos.flush();
+				oos.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		//////////// --------- Cornacopia End ------------ ///////////////	
+		//////////// --------- Waiting ------------ ///////////////
+
+		if(waiting != null){
+			file = new File(path + File.separator + "Wait.loc");
+			new File(path).mkdir();
+			if(!file.exists()){
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+	
+			String w = "";
+			w = (waiting.getWorld().getName() + "," + waiting.getBlockX() + "," + waiting.getBlockY() + "," + waiting.getBlockZ());
+			
+			try{
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path + File.separator + "Wait.loc"));
+				oos.writeObject(w);
+				oos.flush();
+				oos.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+		//////////// --------- Waiting End ------------ ///////////////
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void load(){
+		//////////// --------- Tubes ------------ ///////////////
+		try{
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path + File.separator + "Tubes.loc"));
+			Object result = ois.readObject();
+
+			ArrayList<String> t = new ArrayList<String>();
+			t = (ArrayList<String>)result;
+			
+			tubes = new ArrayList<Location>();
+			
+			for(String x: t){
+				String[] split = x.split(",");
+				tubes.add(new Location(server.getWorld(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3])));
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		//////////// --------- Tubes End ------------ ///////////////
+		//////////// --------- Cornacopia ------------ ///////////////
+		try{
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path + File.separator + "Corn.loc"));
+			Object result = ois.readObject();
+			
+			String[] split = ((String)result).split(",");
+			Location c = new Location(server.getWorld(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
+			
+			ServerGames.cornacopia = c; 
+			cornacopia.getWorld().setSpawnLocation(cornacopia.getBlockX(), cornacopia.getBlockY(), cornacopia.getBlockZ());
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		//////////// --------- Cornacopia End ------------ ///////////////	
+		//////////// --------- Waiting ------------ ///////////////
+		try{
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path + File.separator + "Wait.loc"));
+			Object result = ois.readObject();
+
+			String[] split = ((String)result).split(",");
+			Location w = new Location(server.getWorld(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
+			
+			ServerGames.waiting = w; 
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		//////////// --------- Waiting End ------------ ///////////////
 	}
 }
