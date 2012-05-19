@@ -1,10 +1,7 @@
 package me.NerdsWBNerds.ServerGames.Objects;
 
 import me.NerdsWBNerds.ServerGames.ServerGames;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.WorldType;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
@@ -28,14 +25,16 @@ public class Chests {
         ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>();
         for(World f : Bukkit.getWorlds()){
             if(f.getWorldType() == WorldType.NORMAL){
-                BlockState[] blockState = f.getChunkAt(corn).getTileEntities();
-                for(BlockState tileEntity : blockState){
-                	Chest chestBlock = (Chest)tileEntity;
-                    Random rnd = new Random();
-                    for(int i = 0; i < 10; i++){
-                        arrayList.add(new ItemStack(items[rnd.nextInt(items.length)], 1));
+                for(Chunk c : corn.getWorld().getLoadedChunks()){
+                    BlockState[] blockState = c.getTileEntities();
+                    for(BlockState tileEntity : blockState){
+                        Chest chestBlock = (Chest)tileEntity;
+                        Random rnd = new Random();
+                        for(int i = 0; i < 10; i++){
+                            arrayList.add(new ItemStack(items[rnd.nextInt(items.length)], 1));
+                        }
+                        setChest(chestBlock, arrayList);
                     }
-                    setChest(chestBlock, arrayList);
                 }
             }
         }
