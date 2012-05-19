@@ -122,6 +122,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 			this.clearItems(p);
 			p.setGameMode(GameMode.SURVIVAL);
 			p.setFireTicks(0);
+			p.setCompassTarget(cornacopia);
 			
 			i++;
 		}
