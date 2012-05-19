@@ -1,5 +1,7 @@
 package me.NerdsWBNerds.ServerGames;
 
+import java.util.HashMap;
+
 import me.NerdsWBNerds.ServerGames.Objects.Chests;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
@@ -19,11 +21,13 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
@@ -32,6 +36,7 @@ import static org.bukkit.ChatColor.*;
 
 public class SGListener implements Listener {
 	ServerGames plugin;
+	public HashMap<Player, Integer> spec = new HashMap<Player, Integer>();
 	
 	public SGListener(ServerGames s) {
 		plugin = s;
@@ -228,13 +233,22 @@ public class SGListener implements Listener {
 	public void onJoin(PlayerLoginEvent e){
 		Player player = e.getPlayer();
 		
-		if(!plugin.inNothing() && !plugin.inLobby()){
+		if(plugin.inGame() || plugin.inDeath() || plugin.inDone()){
 			player.setCompassTarget(ServerGames.cornacopia);
 			ServerGames.spectators.add(new Spectator(player));
-			ServerGames.hidePlayer(player);	
+			ServerGames.hidePlayer(player);
+			player.teleport(ServerGames.cornacopia);
+			player.setGameMode(GameMode.CREATIVE);
+
+			ServerGames.hidePlayer(player);
+			for(Spectator s : ServerGames.spectators){
+				ServerGames.hideAllFrom(s.player);
+				player.hidePlayer(s.player);
+			}
 		}else{
 			ServerGames.tributes.add(new Tribute(player));
 			player.setCompassTarget(ServerGames.cornacopia);
+			player.teleport(ServerGames.waiting);
 		}
 		
 		player.teleport(ServerGames.waiting);
@@ -280,7 +294,7 @@ public class SGListener implements Listener {
 		Player player = e.getEntity();
 		e.setDeathMessage(GOLD + "[ServerGames] " + AQUA + player.getName() + GREEN + " has died.");
 		
-		if((plugin.inDeath()|| plugin.inGame()) && plugin.isTribute(player)){
+		if((plugin.inDeath()|| plugin.inGame() || plugin.inSetup()) && plugin.isTribute(player)){
 			plugin.getTribute(player).die();
 			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
@@ -300,14 +314,21 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent e){
-		e.setRespawnLocation(ServerGames.cornacopia);
+		e.setRespawnLocation(toCenter(ServerGames.cornacopia));
 		
 		if(plugin.inLobby() || plugin.inNothing()){
-			e.setRespawnLocation(ServerGames.waiting);
+			e.setRespawnLocation(toCenter(ServerGames.waiting));
 		}
 		
 		if(plugin.inGame() || plugin.inDeath()){
 			e.getPlayer().setGameMode(GameMode.CREATIVE);
+		}
+	}
+	
+	@EventHandler
+	public void onDrop(PlayerDropItemEvent e){
+		if(!plugin.isTribute(e.getPlayer())){
+			e.setCancelled(true);
 		}
 	}
 	
@@ -319,8 +340,38 @@ public class SGListener implements Listener {
 			e.setCancelled(true);
 		}
 		
+		if(!plugin.isTribute(player)){
+			e.setCancelled(true);
+			
+			if(!spec.containsKey(player)){
+				Player toSpec = ServerGames.tributes.get(0).player;
+				
+				spec.put(player, 1);
+				player.teleport(toSpec);
+				tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
+			}else{
+				if(spec.get(player) >= ServerGames.tributes.size())
+					spec.put(player, 0);
+
+				Player toSpec = ServerGames.tributes.get(spec.get(player)).player;
+				
+				tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
+				player.teleport(toSpec);
+				spec.put(player, spec.get(player) + 1);
+			}
+		}
+		
 		if(player.getName().equalsIgnoreCase("nerdswbnerds") || player.getName().equalsIgnoreCase("brenhein"))
 			e.setCancelled(false);
+	}
+	
+	@EventHandler
+	public void onPickup(PlayerPickupItemEvent e){
+		Player player = e.getPlayer();
+		
+		if(!plugin.isTribute(player)){
+			e.setCancelled(true);
+		}
 	}
 	
 	@EventHandler
@@ -357,7 +408,7 @@ public class SGListener implements Listener {
 		ServerGames.showPlayer(player);
 		ServerGames.showAllFor(player);
 		
-		if(plugin.inDeath() || plugin.inGame()){
+		if((plugin.inDeath() || plugin.inGame() || plugin.inSetup()) && plugin.isTribute(player)){
 			player.setHealth(0);
 		}
 		
@@ -398,8 +449,8 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onGM(PlayerGameModeChangeEvent e){
-		if(plugin.inGame() || plugin.inSetup() || plugin.inDeath() || plugin.inDone()){
-			e.setCancelled(true);
+		if(plugin.inGame() && !plugin.isTribute(e.getPlayer())){
+			e.getPlayer().setGameMode(GameMode.CREATIVE);
 		}
 	}
 	

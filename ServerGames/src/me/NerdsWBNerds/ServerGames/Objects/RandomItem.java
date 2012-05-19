@@ -12,7 +12,8 @@ public class RandomItem {
 	public static RandomItem leathershoes = new RandomItem(301, 2);
 	public static RandomItem bow = new RandomItem(261, 5);
 	public static RandomItem arrow = new RandomItem(262, 6);
-	public static RandomItem apple = new RandomItem(260, 6);
+	public static RandomItem apple = new RandomItem(260, 11);
+	public static RandomItem bread = new RandomItem(Material.BREAD.getId(), 9);
 	public static RandomItem compass = new RandomItem(345, 4);
     public static RandomItem diamond = new RandomItem(264, 1);
     public static RandomItem stick = new RandomItem(Material.STICK.getId(), 6);
@@ -39,7 +40,7 @@ public class RandomItem {
 	}
 	
 	public static RandomItem[] getAll(){
-		RandomItem[] ret = { air, stonesword, woodsword, leatherchest, leatherheml, leatherpants, leathershoes, apple, arrow, bow, compass, diamond, stick, chainboots, chainchest, chainhelm, chainpants, goldboots, goldchest, goldhelm, goldlegs, iron, gold, goldSword};
+		RandomItem[] ret = { air, stonesword, woodsword, leatherchest, leatherheml, leatherpants, leathershoes, apple, arrow, bow, compass, diamond, stick, chainboots, chainchest, chainhelm, chainpants, goldboots, goldchest, goldhelm, goldlegs, iron, gold, goldSword, bread};
 		return ret;
 	}
 }

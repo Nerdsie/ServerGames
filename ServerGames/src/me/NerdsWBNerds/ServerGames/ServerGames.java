@@ -83,9 +83,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public void startLobby(){
 		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Countdown started.");
 
-		for(Spectator s: ServerGames.spectators){
-			tributes.add(new Tribute(s.player));
-		}
+		spectators.clear();
+		tributes.clear();
 		
 		cancelTasks();
 		
@@ -94,7 +93,10 @@ public class ServerGames extends JavaPlugin implements Listener{
 		
 		for(Player p: server.getOnlinePlayers()){
 			showAllFor(p);
+			clearItems(p);
+			tributes.add(new Tribute(p));
 		}
+		
 		this.resetPlayers();
 		
 		state = State.LOBBY;

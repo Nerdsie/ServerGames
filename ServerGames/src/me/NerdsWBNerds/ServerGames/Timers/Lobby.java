@@ -9,7 +9,7 @@ public class Lobby extends CurrentState{
 	
 	public Lobby(ServerGames p){
 		plugin = p;
-		time = 15;
+		time = 60 * 1;
 	}
 	
 	@Override
