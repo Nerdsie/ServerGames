@@ -24,7 +24,7 @@ public class Chests {
     // might not work
     public static void resetChests(ServerGames plugin, Location corn){
         // fishing rod, bow, arrow, diamond, wood sword, compass, iron sword, stone sword, gold sword, all armour
-        int[] items = { 346, 261, 262, 260, 264, 268, 345, 267, 272, 283, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 317 };
+        int[] items = { 346, 261, 262, 260, 264, 268, 345, 267, 272, 283, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 317, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>();
         for(World f : Bukkit.getWorlds()){
             if(f.getWorldType() == WorldType.NORMAL){
@@ -32,7 +32,7 @@ public class Chests {
                 for(BlockState tileEntity : blockState){
                 	Chest chestBlock = (Chest)tileEntity;
                     Random rnd = new Random();
-                    for(int i = 0; i < 7; i++){
+                    for(int i = 0; i < 10; i++){
                         arrayList.add(new ItemStack(items[rnd.nextInt(items.length)], 1));
                     }
                     setChest(chestBlock, arrayList);
