@@ -29,7 +29,7 @@ public class Chests {
     				ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>();
     				Chest chestBlock = (Chest)tileEntity;
     				Random rnd = new Random();
-    				for(int i = 0; i < 10; i++){
+    				for(int i = 0; i < 27; i++){
     					arrayList.add(new ItemStack(items[rnd.nextInt(items.length)], 1));
     				}
     				setChest(chestBlock, arrayList);
@@ -41,12 +41,14 @@ public class Chests {
     public static void setChest(Chest c, ArrayList<ItemStack> items){
     	try{
     		Chest chest = (Chest) c;
-
-            chest.getInventory().clear();      
+            ItemStack[] stuff = new ItemStack[27];
             
-            for(ItemStack a : items){
-                chest.getInventory().addItem(a);
+            for(int i = 0; i < 27; i++){
+            	stuff[i] = items.get(i);
             }
+
+            chest.getInventory().clear();  
+            chest.getInventory().setContents(stuff);
     	}catch(Exception e){
     		e.printStackTrace();
     	}
