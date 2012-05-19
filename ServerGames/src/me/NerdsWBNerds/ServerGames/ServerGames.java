@@ -3,15 +3,12 @@ package me.NerdsWBNerds.ServerGames;
 import static org.bukkit.ChatColor.GOLD;
 import static org.bukkit.ChatColor.GREEN;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import de.diddiz.LogBlock.QueryParams;
+import me.NerdsWBNerds.ServerGames.Objects.Chests;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
 import me.NerdsWBNerds.ServerGames.Timers.Deathmatch;
@@ -22,14 +19,21 @@ import me.NerdsWBNerds.ServerGames.Timers.CurrentState;
 import me.NerdsWBNerds.ServerGames.Timers.Setup;
 import me.NerdsWBNerds.ServerGames.Timers.CurrentState.State;
 
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.event.Listener;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.diddiz.LogBlock.Consumer;
+import de.diddiz.LogBlock.LogBlock;
+
 public class ServerGames extends JavaPlugin implements Listener{
+
+    private Consumer lbconsumer = null;
+
 	public String path = "plugins/ServerGames";
 	
 	public SGListener Listener = new SGListener(this);
@@ -45,6 +49,13 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public static Location cornacopia = null, waiting = null;
 	
 	public void onEnable(){
+
+        final PluginManager pm = getServer().getPluginManager();
+        final Plugin plugin = pm.getPlugin("LogBlock");
+        if (plugin != null)
+            lbconsumer = ((LogBlock)plugin).getConsumer();
+
+
 		server = this.getServer();
 		log = this.getLogger();
 
@@ -120,6 +131,26 @@ public class ServerGames extends JavaPlugin implements Listener{
 		cornacopia.getWorld().setTime(0);
 		cornacopia.getWorld().setWeatherDuration(0);
 		cornacopia.getWorld().setStorm(false);
+
+
+        // ----- WORLD RESETTING -----
+        Chests.resetChests(this, cornacopia);
+        this.getServer().broadcastMessage(GOLD + "[SurvivalGames] " + GREEN + "MAP IS RESETTING!");
+
+
+        LogBlock logblock = (LogBlock)getServer().getPluginManager().getPlugin("LogBlock");
+        QueryParams params = new QueryParams(logblock);
+
+        params.world = cornacopia.getWorld();
+        params.silent = false;
+
+        try {
+            logblock.getCommandsHandler().new CommandRollback(this.getServer().getConsoleSender(), params, true);
+        } catch(Exception e){}
+
+        this.getServer().broadcastMessage(GOLD + "[SurvivalGames] " + GREEN + "Map has been reset!");
+
+        // ----- WORLD RESETTING -----
 		
 		cancelTasks();
 		
