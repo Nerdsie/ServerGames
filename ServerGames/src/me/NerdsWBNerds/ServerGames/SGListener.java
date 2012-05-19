@@ -1,5 +1,6 @@
 package me.NerdsWBNerds.ServerGames;
 
+import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
 
 import org.bukkit.Location;
@@ -189,18 +190,14 @@ public class SGListener implements Listener {
 	public void onJoin(PlayerLoginEvent e){
 		Player player = e.getPlayer();
 		
-		if(!plugin.inNothing() && !plugin.inLobby())
-			e.disallow(Result.KICK_OTHER, "[ServerGames] Spectating is not working yet, Sorry!");
-		
-		ServerGames.tributes.add(new Tribute(player));
-		
-		if(plugin.inGame() || plugin.inDeath() || plugin.inDeath()){
-			player.teleport(ServerGames.cornacopia);
+		if(!plugin.inNothing() && !plugin.inLobby()){
+			ServerGames.spectators.add(new Spectator(player));
+			ServerGames.hidePlayer(player);	
+		}else{
+			ServerGames.tributes.add(new Tribute(player));
 		}
-			
-		if(plugin.inLobby() || plugin.inNothing()){
-			player.teleport(ServerGames.waiting);
-		}
+		
+		player.teleport(ServerGames.waiting);
 			
 		if(e.getResult() == Result.KICK_FULL){
 			e.setKickMessage("[ServerGames] This game is currently full.");
@@ -263,13 +260,7 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent e){
-		if(plugin.inGame() || plugin.inDeath() || plugin.inDone()){
-			e.setRespawnLocation(ServerGames.cornacopia);
-		}
-		
-		if(plugin.inLobby() || plugin.inNothing()){
-			e.setRespawnLocation(ServerGames.waiting);
-		}
+		e.setRespawnLocation(ServerGames.waiting);
 	}
 	
 	@EventHandler

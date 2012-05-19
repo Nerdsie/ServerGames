@@ -41,7 +41,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public static CurrentState game = null;
 	public static ArrayList<Location> tubes = new ArrayList<Location>();
 	public static ArrayList<Tribute> tributes = new ArrayList<Tribute>();
-	public ArrayList<Spectator> spectators = new ArrayList<Spectator>();
+	public static ArrayList<Spectator> spectators = new ArrayList<Spectator>();
 	public static Location cornacopia = null, waiting = null;
 	
 	public void onEnable(){
@@ -440,7 +440,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public boolean isTribute(Player player){
-		if(this.getTribute(player)==null)
+		if(this.getTribute(player)!=null)
 			return true;
 		
 		return false;

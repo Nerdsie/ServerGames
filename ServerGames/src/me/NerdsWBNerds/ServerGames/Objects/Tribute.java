@@ -19,11 +19,7 @@ public class Tribute {
 		strike.setX(ServerGames.cornacopia.getY() + 50);
 		
 		ServerGames.cornacopia.getWorld().strikeLightning(strike);
-		
-		if(ServerGames.isOwner(player)){
-			return;
-		}
-		
+
 		ServerGames.hidePlayer(player);
 	}
 	
