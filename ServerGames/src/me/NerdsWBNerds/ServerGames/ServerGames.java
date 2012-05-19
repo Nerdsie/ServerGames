@@ -20,6 +20,8 @@ import me.NerdsWBNerds.ServerGames.Timers.Setup;
 import me.NerdsWBNerds.ServerGames.Timers.CurrentState.State;
 
 import org.bukkit.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.Listener;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -145,6 +147,12 @@ public class ServerGames extends JavaPlugin implements Listener{
         } catch(Exception e){}
 
         this.getServer().broadcastMessage(GOLD + "[SurvivalGames] " + GREEN + "Map has been reset!");
+        
+        for(Entity e : cornacopia.getWorld().getEntities()){
+            if(e.getType() == EntityType.DROPPED_ITEM){
+                e.remove();
+            }
+        }
 
         // ----- WORLD RESETTING -----
 		
