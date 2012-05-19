@@ -8,7 +8,7 @@ public class Game extends CurrentState{
 	
 	public Game(ServerGames p){
 		plugin = p;
-		time = 60 * 5;
+		time = 60 * 15;
 	}
 	
 	public void run(){

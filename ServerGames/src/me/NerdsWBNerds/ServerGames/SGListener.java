@@ -1,8 +1,10 @@
 package me.NerdsWBNerds.ServerGames;
 
+import me.NerdsWBNerds.ServerGames.Objects.Chests;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -149,6 +151,40 @@ public class SGListener implements Listener {
 			tell(player, GOLD + "[ServerGames]" + GREEN + " Waiting spawn set at your location.");
 			plugin.save();
 		}
+		
+		if(args[0].equalsIgnoreCase("/chests")){
+			e.setCancelled(true);
+			
+			if(!player.isOp()){
+				tell(player, RED + "[ServerGames] You do not have permission to do this.");
+				return;
+			}
+			
+			ServerGames.loaded.clear();
+			Chests.resetChests();
+		}
+		
+		if(args[0].equalsIgnoreCase("/toc")){
+			e.setCancelled(true);
+			
+			if(!player.isOp()){
+				tell(player, RED + "[ServerGames] You do not have permission to do this.");
+				return;
+			}
+			
+			player.teleport(ServerGames.cornacopia);
+		}
+		
+		if(args[0].equalsIgnoreCase("/tow")){
+			e.setCancelled(true);
+			
+			if(!player.isOp()){
+				tell(player, RED + "[ServerGames] You do not have permission to do this.");
+				return;
+			}
+			
+			player.teleport(ServerGames.waiting);
+		}
 
 		if(args[0].equalsIgnoreCase("/start")){
 			e.setCancelled(true);
@@ -192,10 +228,12 @@ public class SGListener implements Listener {
 		Player player = e.getPlayer();
 		
 		if(!plugin.inNothing() && !plugin.inLobby()){
+			player.setCompassTarget(ServerGames.cornacopia);
 			ServerGames.spectators.add(new Spectator(player));
 			ServerGames.hidePlayer(player);	
 		}else{
 			ServerGames.tributes.add(new Tribute(player));
+			player.setCompassTarget(ServerGames.cornacopia);
 		}
 		
 		player.teleport(ServerGames.waiting);
@@ -261,10 +299,11 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent e){
-		e.setRespawnLocation(ServerGames.waiting);
+		e.setRespawnLocation(ServerGames.cornacopia);
 		
-		if(plugin.inGame() || plugin.inDeath() || plugin.inSetup())
-			e.setRespawnLocation(ServerGames.cornacopia);
+		if(plugin.inLobby() || plugin.inNothing()){
+			e.setRespawnLocation(ServerGames.waiting);
+		}
 	}
 	
 	@EventHandler
@@ -316,6 +355,23 @@ public class SGListener implements Listener {
 		if(plugin.inDeath() || plugin.inGame()){
 			player.setHealth(0);
 		}
+		
+		if((plugin.inDeath()|| plugin.inGame()) && plugin.isTribute(player)){
+			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
+			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
+			
+			if(ServerGames.tributes.size()==2){				
+				say(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
+
+				plugin.startDeath();
+			}
+			
+			if(ServerGames.tributes.size()==1){
+				say(GOLD + "[ServerGames] " + AQUA + ServerGames.tributes.get(0).player.getName() + GREEN + " has won the Server Games!");
+				plugin.startFinished();
+			}
+		}
+		
 	}
 
 	@EventHandler
@@ -344,7 +400,9 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onChunkLoad(ChunkLoadEvent e){
+		Chunk loaded = e.getChunk();
 		
+		Chests.resetChests(loaded);
 	}
 	
 	@EventHandler

@@ -2,6 +2,7 @@ package me.NerdsWBNerds.ServerGames.Objects;
 
 import me.NerdsWBNerds.ServerGames.ServerGames;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -22,7 +23,7 @@ public class Tribute {
 
 		ServerGames.hidePlayer(player);
         
-        //player.setFlying(true);
+        player.setGameMode(GameMode.CREATIVE);
 	}
 	
 	public void leave(){

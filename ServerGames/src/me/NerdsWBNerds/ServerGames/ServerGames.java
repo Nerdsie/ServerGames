@@ -20,20 +20,15 @@ import me.NerdsWBNerds.ServerGames.Timers.Setup;
 import me.NerdsWBNerds.ServerGames.Timers.CurrentState.State;
 
 import org.bukkit.*;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.event.Listener;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import de.diddiz.LogBlock.Consumer;
 import de.diddiz.LogBlock.LogBlock;
 
 public class ServerGames extends JavaPlugin implements Listener{
-
-    private Consumer lbconsumer = null;
-
 	public String path = "plugins/ServerGames";
 	
 	public SGListener Listener = new SGListener(this);
@@ -46,15 +41,14 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public static ArrayList<Location> tubes = new ArrayList<Location>();
 	public static ArrayList<Tribute> tributes = new ArrayList<Tribute>();
 	public static ArrayList<Spectator> spectators = new ArrayList<Spectator>();
+	public static ArrayList<Chunk> loaded = new ArrayList<Chunk>();
 	public static Location cornacopia = null, waiting = null;
 	
+	@SuppressWarnings("unused")
 	public void onEnable(){
 
         final PluginManager pm = getServer().getPluginManager();
         final Plugin plugin = pm.getPlugin("LogBlock");
-        if (plugin != null)
-            lbconsumer = ((LogBlock)plugin).getConsumer();
-
 
 		server = this.getServer();
 		log = this.getLogger();
@@ -87,7 +81,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public void startLobby(){
 		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Countdown started.");
 
-		for(Spectator s: this.spectators){
+		for(Spectator s: ServerGames.spectators){
 			tributes.add(new Tribute(s.player));
 		}
 		
@@ -115,6 +109,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 				i = 0;
 			
 			Location to = ServerGames.tubes.get(i);
+			showAllFor(p);
 			p.teleport(toCenter(to));
 			p.setSprinting(false);
 			p.setSneaking(false);
@@ -395,8 +390,6 @@ public class ServerGames extends JavaPlugin implements Listener{
 			Location c = new Location(server.getWorld(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
 			
 			ServerGames.cornacopia = c; 
-			cornacopia.getWorld().setSpawnLocation(cornacopia.getBlockX(), cornacopia.getBlockY(), cornacopia.getBlockZ());
-			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
