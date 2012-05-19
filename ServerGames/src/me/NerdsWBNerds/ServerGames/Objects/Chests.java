@@ -19,7 +19,7 @@ public class Chests {
     // might not work
     public static void resetChests(){
     	// fishing rod, bow, arrow, diamond, wood sword, compass, iron sword, stone sword, gold sword, all armour
-    	RandomItem[] possible = {RandomItem.air};
+    	RandomItem[] possible = RandomItem.getAll();
     	ArrayList<Integer> items = new ArrayList<Integer>();    	
     	
     	for(RandomItem i : possible){

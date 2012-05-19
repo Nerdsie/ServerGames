@@ -1,7 +1,7 @@
 package me.NerdsWBNerds.ServerGames.Objects;
 
 public class RandomItem {
-	public static RandomItem air = new RandomItem(0, 100);
+	public static RandomItem air = new RandomItem(0, 30);
 	public static RandomItem stonesword = new RandomItem(272, 5);
 	public static RandomItem woodsword = new RandomItem(268, 10);
 	public static RandomItem leatherheml = new RandomItem(298, 8);
@@ -11,11 +11,17 @@ public class RandomItem {
 	public static RandomItem bow = new RandomItem(261, 5);
 	public static RandomItem arrow = new RandomItem(262, 10);
 	public static RandomItem apple = new RandomItem(260, 4);
+	public static RandomItem compass = new RandomItem(345, 4);
 	
 	public int id, chance;
 	
 	public RandomItem(int id, int chance){
 		this.id = id;
 		this.chance = chance;
+	}
+	
+	public static RandomItem[] getAll(){
+		RandomItem[] ret = { air, stonesword, woodsword, leatherchest, leatherheml, leatherpants, leathershoes, apple, arrow, bow, compass};
+		return ret;
 	}
 }
