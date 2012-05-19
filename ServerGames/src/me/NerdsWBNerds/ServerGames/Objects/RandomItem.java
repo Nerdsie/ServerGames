@@ -1,8 +1,8 @@
 package me.NerdsWBNerds.ServerGames.Objects;
 
 public class RandomItem {
-	public static RandomItem air = new RandomItem(0, 30);
-	public static RandomItem stonesword = new RandomItem(272, 5);
+	public static RandomItem air = new RandomItem(0, 300);
+	public static RandomItem stonesword = new RandomItem(272, 10);
 	public static RandomItem woodsword = new RandomItem(268, 10);
 	public static RandomItem leatherheml = new RandomItem(298, 8);
 	public static RandomItem leatherchest = new RandomItem(299, 8);
@@ -28,6 +28,9 @@ public class RandomItem {
     public static RandomItem goldlegs = new RandomItem(316, 7);
     public static RandomItem goldboots = new RandomItem(317, 7);
     
+    public static RandomItem ironSword = new RandomItem(267, 7);
+    public static RandomItem goldSword = new RandomItem(283, 5);
+    
     //public static RandomItem gApple = bew
 	
 	public int id, chance;
@@ -38,7 +41,7 @@ public class RandomItem {
 	}
 	
 	public static RandomItem[] getAll(){
-		RandomItem[] ret = { air, stonesword, woodsword, leatherchest, leatherheml, leatherpants, leathershoes, apple, arrow, bow, compass, diamond, ironhelm, ironlegs, ironbody, ironboots, chainboots, chainchest, chainhelm, chainpants, goldboots, goldchest, goldhelm, goldlegs, iron, gold };
+		RandomItem[] ret = { air, stonesword, woodsword, leatherchest, leatherheml, leatherpants, leathershoes, apple, arrow, bow, compass, diamond, ironhelm, ironlegs, ironbody, ironboots, chainboots, chainchest, chainhelm, chainpants, goldboots, goldchest, goldhelm, goldlegs, iron, gold, goldSword, ironSword };
 		return ret;
 	}
 }
