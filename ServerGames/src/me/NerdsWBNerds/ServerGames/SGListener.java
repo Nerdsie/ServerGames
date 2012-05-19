@@ -23,6 +23,7 @@ import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 
 import static org.bukkit.ChatColor.*;
 
@@ -339,6 +340,11 @@ public class SGListener implements Listener {
 		if(plugin.inGame() || plugin.inSetup() || plugin.inDeath() || plugin.inDone()){
 			e.setCancelled(true);
 		}
+	}
+	
+	@EventHandler
+	public void onChunkLoad(ChunkLoadEvent e){
+		
 	}
 	
 	@EventHandler

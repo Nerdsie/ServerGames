@@ -19,7 +19,15 @@ public class Chests {
     // might not work
     public static void resetChests(){
     	// fishing rod, bow, arrow, diamond, wood sword, compass, iron sword, stone sword, gold sword, all armour
-    	int[] items = { 346, 261, 262, 260, 264, 268, 345, 267, 272, 283, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 317, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    	RandomItem[] possible = {RandomItem.air};
+    	ArrayList<Integer> items = new ArrayList<Integer>();    	
+    	
+    	for(RandomItem i : possible){
+    		for(int x = 0; x < i.chance; x++){
+    			items.add(i.id);
+    		}
+    	}
+    	
     	for(Chunk c : ServerGames.cornacopia.getWorld().getLoadedChunks()){
     		BlockState[] blockState = c.getTileEntities();
     		for(BlockState tileEntity : blockState){
@@ -30,7 +38,7 @@ public class Chests {
     				Chest chestBlock = (Chest)tileEntity;
     				Random rnd = new Random();
     				for(int i = 0; i < 27; i++){
-    					arrayList.add(new ItemStack(items[rnd.nextInt(items.length)], 1));
+    					arrayList.add(new ItemStack(items.get(rnd.nextInt(items.size())), 1));
     				}
     				setChest(chestBlock, arrayList);
     			}
