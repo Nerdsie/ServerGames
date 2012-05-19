@@ -1,8 +1,6 @@
 package me.NerdsWBNerds.ServerGames;
 
-import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
-import me.NerdsWBNerds.ServerGames.Timers.CurrentState.State;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -11,10 +9,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -94,8 +96,19 @@ public class SGListener implements Listener {
 				tell(player, RED + "[ServerGames] You do not have permission to do this.");
 				return;
 			}
+
+			say(GOLD + "[ServerGames]" + GREEN + " Current game has ended.");
 			
+			plugin.tpAll(ServerGames.waiting);
 			plugin.stopAll();
+		}
+
+		if(args[0].equalsIgnoreCase("/list")){
+			e.setCancelled(true);
+			
+			for(Tribute t:ServerGames.tributes){
+				tell(player, RED + "[ServerGames] " + t.player.getName());
+			}
 		}
 		
 		if(args[0].equalsIgnoreCase("/final")){
@@ -176,19 +189,19 @@ public class SGListener implements Listener {
 	public void onJoin(PlayerLoginEvent e){
 		Player player = e.getPlayer();
 		
-		if(ServerGames.state != null || ServerGames.state != State.LOBBY)
+		if(!plugin.inNothing() && !plugin.inLobby())
 			e.disallow(Result.KICK_OTHER, "[ServerGames] Spectating is not working yet, Sorry!");
 		
-		if(player.isOp()){
-			if(ServerGames.server.getMaxPlayers() <= ServerGames.server.getOnlinePlayers().length){
-				ServerGames.spectators.add(new Spectator(player));
-			}else{
-				ServerGames.tributes.add(new Tribute(player));
-			}
-			
-			e.allow();
-		}
+		ServerGames.tributes.add(new Tribute(player));
 		
+		if(plugin.inGame() || plugin.inDeath() || plugin.inDeath()){
+			player.teleport(ServerGames.cornacopia);
+		}
+			
+		if(plugin.inLobby() || plugin.inNothing()){
+			player.teleport(ServerGames.waiting);
+		}
+			
 		if(e.getResult() == Result.KICK_FULL){
 			e.setKickMessage("[ServerGames] This game is currently full.");
 		}
@@ -200,8 +213,14 @@ public class SGListener implements Listener {
 		Block block = e.getBlock();
 		
 		if(!player.getName().equalsIgnoreCase("nerdswbnerds") && !player.getName().equalsIgnoreCase("brenhein")){
+			if(plugin.inLobby() || plugin.inNothing())
+				e.setCancelled(true);
+			
 			if(block.getTypeId() != 106 && block.getTypeId() != 92 && block.getTypeId() != 31 && block.getTypeId() != 18)
-			e.setCancelled(true);
+				e.setCancelled(true);
+			
+			if(!plugin.isTribute(player))
+				e.setCancelled(true);
 		}
 	}
 	
@@ -210,17 +229,21 @@ public class SGListener implements Listener {
 		Player player = e.getPlayer();
 		Block block = e.getBlock();
 		
-		if(!player.getName().equalsIgnoreCase("nerdswbnerds") && !player.getName().equalsIgnoreCase("brenhein")){
+		if(!ServerGames.isOwner(player)){
+			if(plugin.inLobby() || plugin.inNothing())
+				e.setCancelled(true);
+			
 			if(block.getTypeId() != 106 && block.getTypeId() != 92 && block.getTypeId() != 31)
 			e.setCancelled(true);
 		}
 	}
-	
+
 	@EventHandler
 	public void onDie(PlayerDeathEvent e){
 		Player player = e.getEntity();
+		e.setDeathMessage(GOLD + "[ServerGames] " + AQUA + player.getName() + GREEN + " has died.");
 		
-		if((ServerGames.state == State.DEATHMATCH || ServerGames.state == State.IN_GAME) && plugin.getTribute(player) != null){
+		if((plugin.inDeath()|| plugin.inGame()) && plugin.isTribute(player)){
 			plugin.getTribute(player).die();
 			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
@@ -240,12 +263,49 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent e){
-		if(ServerGames.state == State.IN_GAME || ServerGames.state == State.DEATHMATCH || ServerGames.state == State.DONE){
+		if(plugin.inGame() || plugin.inDeath() || plugin.inDone()){
 			e.setRespawnLocation(ServerGames.cornacopia);
 		}
 		
-		if(ServerGames.state == State.LOBBY){
+		if(plugin.inLobby() || plugin.inNothing()){
 			e.setRespawnLocation(ServerGames.waiting);
+		}
+	}
+	
+	@EventHandler
+	public void onInteract(PlayerInteractEvent e){
+		Player player = e.getPlayer();
+		
+		if(!plugin.inGame() && !plugin.inDeath() && !plugin.inDone()){
+			e.setCancelled(true);
+		}
+		
+		if(player.getName().equalsIgnoreCase("nerdswbnerds") || player.getName().equalsIgnoreCase("brenhein"))
+			e.setCancelled(false);
+	}
+	
+	@EventHandler
+	public void onHurt(EntityDamageEvent e){
+		if(e.getEntity() instanceof Player){
+			Player player = (Player) e.getEntity();
+
+			if(plugin.inDone() || plugin.inLobby() || plugin.inNothing()){
+				e.setCancelled(true);
+				e.setDamage(0);
+				player.setFireTicks(0);
+			}
+		}
+	}	
+	
+	@EventHandler
+	public void onHurtByOther(EntityDamageByEntityEvent e){
+		if(e.getEntity() instanceof Player && e.getDamager() instanceof Player){
+			Player hit = (Player) e.getDamager();
+
+			if(!plugin.isTribute(hit)){
+				e.setCancelled(true);
+				e.setDamage(0);
+			}
 		}
 	}
 	
@@ -253,25 +313,37 @@ public class SGListener implements Listener {
 	public void onLeave(PlayerQuitEvent e){
 		Player player = e.getPlayer();
 		
-		if(ServerGames.state == State.DEATHMATCH || ServerGames.state == State.IN_GAME){
+		ServerGames.tributes.remove(plugin.getTribute(player));
+		
+		ServerGames.showPlayer(player);
+		ServerGames.showAllFor(player);
+		
+		if(plugin.inDeath() || plugin.inGame()){
 			player.setHealth(0);
 		}
 	}
-	
+
 	@EventHandler
 	public void onMove(PlayerMoveEvent e){
 		Location x = e.getFrom(), y = e.getTo();
 		if(x.getBlockX() != y.getBlockX() || x.getBlockZ() != y.getBlockZ()){
-			if(ServerGames.state == State.SET_UP){
+			if(plugin.inSetup()){
 				e.setTo(x);
 			}
 		}
 		
-		if(ServerGames.state == State.DEATHMATCH){
-			if(x.distance(ServerGames.cornacopia) >= 100){
+		if(plugin.inDeath()){
+			if(y.distance(ServerGames.cornacopia) > 30 && x.distance(ServerGames.cornacopia) <= 30){
 				ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + AQUA + e.getPlayer().getName() + GREEN + " tried to run from the fight!");
 				e.getPlayer().setHealth(0);
 			}
+		}
+	}
+	
+	@EventHandler
+	public void onGM(PlayerGameModeChangeEvent e){
+		if(plugin.inGame() || plugin.inSetup() || plugin.inDeath() || plugin.inDone()){
+			e.setCancelled(true);
 		}
 	}
 	

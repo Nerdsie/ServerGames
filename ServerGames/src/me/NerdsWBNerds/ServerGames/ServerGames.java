@@ -22,6 +22,7 @@ import me.NerdsWBNerds.ServerGames.Timers.CurrentState;
 import me.NerdsWBNerds.ServerGames.Timers.Setup;
 import me.NerdsWBNerds.ServerGames.Timers.CurrentState.State;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.event.Listener;
 import org.bukkit.Server;
@@ -40,7 +41,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public static CurrentState game = null;
 	public static ArrayList<Location> tubes = new ArrayList<Location>();
 	public static ArrayList<Tribute> tributes = new ArrayList<Tribute>();
-	public static ArrayList<Spectator> spectators = new ArrayList<Spectator>();
+	public ArrayList<Spectator> spectators = new ArrayList<Spectator>();
 	public static Location cornacopia = null, waiting = null;
 	
 	public void onEnable(){
@@ -52,9 +53,11 @@ public class ServerGames extends JavaPlugin implements Listener{
 		new File(path).mkdir();
 		load();
 		
-		for(Player p : server.getOnlinePlayers()){
-			tributes.add(new Tribute(p));
-		}
+		this.resetPlayers();
+
+		tpAll(waiting);
+		
+		//cornacopia.getWorld().setAutoSave(false);
 	}
 	
 	public void onDisable(){
@@ -62,11 +65,30 @@ public class ServerGames extends JavaPlugin implements Listener{
 		
 		save();
 	}
+
+	public void resetPlayers(){
+		tributes = new ArrayList<Tribute>();
+		for(Player p : server.getOnlinePlayers()){
+			tributes.add(new Tribute(p));
+		}
+	}
 	
 	public void startLobby(){
 		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Countdown started.");
 
+		for(Spectator s: this.spectators){
+			tributes.add(new Tribute(s.player));
+		}
+		
 		cancelTasks();
+		
+		load();
+		tpAll(waiting);
+		
+		for(Player p: server.getOnlinePlayers()){
+			showAllFor(p);
+		}
+		this.resetPlayers();
 		
 		state = State.LOBBY;
 		game = new Lobby(this);
@@ -86,6 +108,9 @@ public class ServerGames extends JavaPlugin implements Listener{
 			p.setSprinting(false);
 			p.setSneaking(false);
 			p.setPassenger(null);
+			this.clearItems(p);
+			p.setGameMode(GameMode.SURVIVAL);
+			p.setFireTicks(0);
 			
 			i++;
 		}
@@ -112,6 +137,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 		for(Player p : server.getOnlinePlayers()){
 			p.setHealth(20);
 			p.setFoodLevel(20);
+			this.clearItems(p);
 		}
 			
 		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Let the game begin!");
@@ -174,7 +200,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 		return null;
 	}
 	
-	public void tpall(Location l){
+	public void tpAll(Location l){
 		for(Player p:server.getOnlinePlayers()){
 			p.teleport(l);
 		}
@@ -184,25 +210,25 @@ public class ServerGames extends JavaPlugin implements Listener{
 		this.getServer().getScheduler().cancelAllTasks();
 	}
 	
-	public void showPlayer(Player player){
+	public static void showPlayer(Player player){
 		for(Player p : server.getOnlinePlayers()){
 			p.showPlayer(player);
 		}
 	}
 	
-	public void hidePlayer(Player player){
+	public static void hidePlayer(Player player){
 		for(Player p : server.getOnlinePlayers()){
 			p.hidePlayer(player);
 		}
 	}
 	
-	public void hideFrom(Player player){
+	public static void hideAllFrom(Player player){
 		for(Player p : server.getOnlinePlayers()){
 			player.hidePlayer(p);
 		}
 	}
 	
-	public void showFor(Player player){
+	public static void showAllFor(Player player){
 		for(Player p : server.getOnlinePlayers()){
 			player.showPlayer(p);
 		}
@@ -357,5 +383,66 @@ public class ServerGames extends JavaPlugin implements Listener{
 			e.printStackTrace();
 		}
 		//////////// --------- Waiting End ------------ ///////////////
+	}
+
+	public boolean inGame(){
+		if(state == State.IN_GAME)
+			return true;
+			
+		return false;
+	}
+	
+	public boolean inLobby(){
+		if(state == State.LOBBY)
+			return true;
+		
+		return false;
+	}
+	
+	public boolean inSetup(){
+		if(state == State.SET_UP)
+			return true;
+		
+		return false;
+	}
+	
+	public boolean inDone(){
+		if(state == State.DONE)
+			return true;
+		
+		return false;
+	}
+	
+	public boolean inDeath(){
+		if(state == State.DEATHMATCH)
+			return true;
+		
+		return false;
+	}
+	
+	public boolean inNothing(){
+		if(state == null)
+			return true;
+		
+		return false;
+	}
+	
+	public static boolean isOwner(Player player){
+		if(player.getName().equalsIgnoreCase("nerdswbnerds") || player.getName().equalsIgnoreCase("brenhein"))
+			return true;
+		
+		return false;
+	}
+	
+	public void clearItems(Player player){
+		player.getInventory().clear();
+		player.getInventory().setArmorContents(null);
+	}
+	
+	public boolean isTribute(Player player){
+		if(this.getTribute(player)==null)
+			return true;
+		
+		return false;
 	}
 }

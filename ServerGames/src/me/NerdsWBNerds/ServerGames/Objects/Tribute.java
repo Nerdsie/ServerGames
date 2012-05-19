@@ -19,10 +19,20 @@ public class Tribute {
 		strike.setX(ServerGames.cornacopia.getY() + 50);
 		
 		ServerGames.cornacopia.getWorld().strikeLightning(strike);
-	//	player.kickPlayer("Spectating not currently enabled.  Sorry!");
-	//	return;
 		
-	//	ServerGames.spectators.add(new Spectator(player));
-	//	ServerGames.tributes.remove(this);
+		if(ServerGames.isOwner(player)){
+			return;
+		}
+		
+		ServerGames.hidePlayer(player);
+	}
+	
+	public void leave(){
+		ServerGames.tributes.remove(this);
+
+		Location strike = ServerGames.cornacopia;
+		strike.setX(ServerGames.cornacopia.getY() + 50);
+		
+		ServerGames.cornacopia.getWorld().strikeLightning(strike);
 	}
 }

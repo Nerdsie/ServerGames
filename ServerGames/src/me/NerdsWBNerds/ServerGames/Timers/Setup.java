@@ -15,7 +15,7 @@ public class Setup extends CurrentState implements Runnable{
 	
 	@Override
 	public void run() {
-		if(ServerGames.state == State.SET_UP){
+		if(plugin.inSetup()){
 			if(time == 60){
 				ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1 minute remaining.");
 			}
