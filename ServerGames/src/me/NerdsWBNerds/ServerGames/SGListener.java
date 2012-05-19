@@ -278,6 +278,8 @@ public class SGListener implements Listener {
 	public void onDie(PlayerDeathEvent e){
 		Player player = e.getEntity();
 		e.setDeathMessage(GOLD + "[ServerGames] " + AQUA + player.getName() + GREEN + " has died.");
+
+        player.teleport(ServerGames.cornacopia);
 		
 		if((plugin.inDeath()|| plugin.inGame()) && plugin.isTribute(player)){
 			plugin.getTribute(player).die();
