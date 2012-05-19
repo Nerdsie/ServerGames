@@ -145,7 +145,7 @@ public class ServerGames extends JavaPlugin implements Listener{
         params.silent = false;
 
         try {
-            logblock.getCommandsHandler().new CommandRollback(this.getServer().getConsoleSender(), params, true);
+            logblock.getCommandsHandler().new CommandRollback(this.getServer().getConsoleSender(), params, false);
         } catch(Exception e){}
 
         this.getServer().broadcastMessage(GOLD + "[SurvivalGames] " + GREEN + "Map has been reset!");

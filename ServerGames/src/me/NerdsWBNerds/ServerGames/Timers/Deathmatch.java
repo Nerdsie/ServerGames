@@ -12,9 +12,9 @@ public class Deathmatch extends CurrentState{
 	}
 	
 	public void run(){
-		if(time==2){
+		if(time==2 * 60){
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 2 minutes remaining.");
-		}if(time==1){
+		}if(time==1 * 60){
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1 minute remaining.");
 		}if(time==0){
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " This Hunger Games has no victor.");

@@ -25,12 +25,12 @@ public class Chests {
     public static void resetChests(ServerGames plugin, Location corn){
         // fishing rod, bow, arrow, diamond, wood sword, compass, iron sword, stone sword, gold sword, all armour
         int[] items = { 346, 261, 262, 260, 264, 268, 345, 267, 272, 283, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 317 };
-        ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>()
+        ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>();
         for(World f : Bukkit.getWorlds()){
             if(f.getWorldType() == WorldType.NORMAL){
                 BlockState[] blockState = f.getChunkAt(corn).getTileEntities();
                 for(BlockState tileEntity : blockState){
-                    Block chestBlock = tileEntity.getBlock();
+                	Chest chestBlock = (Chest)tileEntity;
                     Random rnd = new Random();
                     for(int i = 0; i < 7; i++){
                         arrayList.add(new ItemStack(items[rnd.nextInt(items.length)], 1));
@@ -41,13 +41,20 @@ public class Chests {
         }
     }
 
-    public static void setChest(Block chest, ArrayList<ItemStack> items){
-        Chest chestTileEntity = null;
-        try{ chestTileEntity = (Chest) chest; } catch(Exception e){  } // yeah yeah let java scream at us
-        Inventory chestInv = chestTileEntity.getBlockInventory();
-        for(ItemStack a : items){
-            chestInv.addItem(a);
-        }
+    public static void setChest(Chest c, ArrayList<ItemStack> items){
+    	try{
+    		Chest chest = (Chest) c;
+
+            chest.getInventory().clear();      
+            
+            for(ItemStack a : items){
+                chest.getInventory().addItem(a);
+            }
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+        
+        System.out.println(items.get(0).getTypeId());  
     }
     
     
