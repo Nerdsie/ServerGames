@@ -6,10 +6,10 @@ public class RandomItem {
 	public static RandomItem air = new RandomItem(0, 300);
 	public static RandomItem stonesword = new RandomItem(272, 4);
 	public static RandomItem woodsword = new RandomItem(268, 6);
-	public static RandomItem leatherheml = new RandomItem(298, 4);
-	public static RandomItem leatherchest = new RandomItem(299, 4);
-	public static RandomItem leatherpants = new RandomItem(300, 4);
-	public static RandomItem leathershoes = new RandomItem(301, 4);
+	public static RandomItem leatherheml = new RandomItem(298, 2);
+	public static RandomItem leatherchest = new RandomItem(299, 2);
+	public static RandomItem leatherpants = new RandomItem(300, 2);
+	public static RandomItem leathershoes = new RandomItem(301, 2);
 	public static RandomItem bow = new RandomItem(261, 5);
 	public static RandomItem arrow = new RandomItem(262, 6);
 	public static RandomItem apple = new RandomItem(260, 6);
@@ -22,10 +22,10 @@ public class RandomItem {
     public static RandomItem chainchest = new RandomItem(303, 2);
     public static RandomItem chainpants = new RandomItem(304, 2);
     public static RandomItem chainboots = new RandomItem(305, 2);
-    public static RandomItem goldhelm = new RandomItem(314, 3);
-    public static RandomItem goldchest = new RandomItem(315, 3);
-    public static RandomItem goldlegs = new RandomItem(316, 3);
-    public static RandomItem goldboots = new RandomItem(317, 3);
+    public static RandomItem goldhelm = new RandomItem(314, 2);
+    public static RandomItem goldchest = new RandomItem(315, 2);
+    public static RandomItem goldlegs = new RandomItem(316, 2);
+    public static RandomItem goldboots = new RandomItem(317, 2);
     
     public static RandomItem goldSword = new RandomItem(283, 4);
     

@@ -16,8 +16,7 @@ public class Tribute {
 	public void die(){
 		ServerGames.tributes.remove(this);
 
-		Location strike = ServerGames.cornacopia;
-		strike.setX(ServerGames.cornacopia.getY() + 50);
+		Location strike = new Location(ServerGames.cornacopia.getWorld(), ServerGames.cornacopia.getBlockX(), ServerGames.cornacopia.getBlockY() + 20, ServerGames.cornacopia.getZ());
 		
 		ServerGames.cornacopia.getWorld().strikeLightning(strike);
 
@@ -29,8 +28,7 @@ public class Tribute {
 	public void leave(){
 		ServerGames.tributes.remove(this);
 
-		Location strike = ServerGames.cornacopia;
-		strike.setX(ServerGames.cornacopia.getY() + 50);
+		Location strike = new Location(ServerGames.cornacopia.getWorld(), ServerGames.cornacopia.getBlockX(), ServerGames.cornacopia.getBlockY() + 20, ServerGames.cornacopia.getZ());
 		
 		ServerGames.cornacopia.getWorld().strikeLightning(strike);
 	}

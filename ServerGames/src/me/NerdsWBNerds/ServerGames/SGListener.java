@@ -5,6 +5,7 @@ import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
 
 import org.bukkit.Chunk;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -303,6 +304,10 @@ public class SGListener implements Listener {
 		
 		if(plugin.inLobby() || plugin.inNothing()){
 			e.setRespawnLocation(ServerGames.waiting);
+		}
+		
+		if(plugin.inGame() || plugin.inDeath()){
+			e.getPlayer().setGameMode(GameMode.CREATIVE);
 		}
 	}
 	
