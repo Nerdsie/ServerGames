@@ -21,6 +21,10 @@ public class Tribute {
 		ServerGames.cornacopia.getWorld().strikeLightning(strike);
 
 		ServerGames.hidePlayer(player);
+        
+        player.setFlying(true);
+
+        player.teleport(ServerGames.cornacopia);
 	}
 	
 	public void leave(){
