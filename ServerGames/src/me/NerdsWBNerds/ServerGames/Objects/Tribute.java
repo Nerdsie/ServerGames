@@ -22,9 +22,7 @@ public class Tribute {
 
 		ServerGames.hidePlayer(player);
         
-        player.setFlying(true);
-
-        player.teleport(ServerGames.cornacopia);
+        //player.setFlying(true);
 	}
 	
 	public void leave(){

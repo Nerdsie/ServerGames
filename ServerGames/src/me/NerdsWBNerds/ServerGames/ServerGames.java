@@ -134,7 +134,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 
 
         // ----- WORLD RESETTING -----
-        Chests.resetChests(this, cornacopia);
+        Chests.resetChests();
         this.getServer().broadcastMessage(GOLD + "[SurvivalGames] " + GREEN + "MAP IS RESETTING!");
 
 

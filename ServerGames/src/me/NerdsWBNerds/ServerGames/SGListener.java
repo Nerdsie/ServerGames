@@ -261,6 +261,9 @@ public class SGListener implements Listener {
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent e){
 		e.setRespawnLocation(ServerGames.waiting);
+		
+		if(plugin.inGame() || plugin.inDeath() || plugin.inSetup())
+			e.setRespawnLocation(ServerGames.cornacopia);
 	}
 	
 	@EventHandler
