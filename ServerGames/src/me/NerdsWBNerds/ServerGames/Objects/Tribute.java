@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 public class Tribute {
 	public Player player;
+	public Location start;
 	
 	public Tribute(Player player){
 		this.player = player;

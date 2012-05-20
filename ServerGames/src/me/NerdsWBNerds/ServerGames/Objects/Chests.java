@@ -30,8 +30,6 @@ public class Chests {
 	    		BlockState[] blockState = c.getTileEntities();
 	    		for(BlockState tileEntity : blockState){
 	    			if(tileEntity instanceof Chest){    	
-	    				System.out.println("Update!");
-	    				
 	    				ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>();
 	    				Chest chestBlock = (Chest)tileEntity;
 	    				Random rnd = new Random();
@@ -66,8 +64,6 @@ public class Chests {
    		BlockState[] blockState = c.getTileEntities();
    		for(BlockState tileEntity : blockState){
    			if(tileEntity instanceof Chest){    	
-   				System.out.println("Update!");
-   				
    				ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>();
    				Chest chestBlock = (Chest)tileEntity;
    				Random rnd = new Random();

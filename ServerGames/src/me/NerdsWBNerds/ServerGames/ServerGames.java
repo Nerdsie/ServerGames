@@ -1,7 +1,6 @@
 package me.NerdsWBNerds.ServerGames;
 
-import static org.bukkit.ChatColor.GOLD;
-import static org.bukkit.ChatColor.GREEN;
+import static org.bukkit.ChatColor.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -71,6 +70,16 @@ public class ServerGames extends JavaPlugin implements Listener{
 		this.cancelTasks();
 		
 		save();
+		
+		tubes.clear();
+		tributes.clear();
+		spectators.clear();
+		loaded.clear();
+		spectators.clear();
+		game = null;
+		state = null;
+		cornacopia = null;
+		waiting = null;
 	}
 
 	public void resetPlayers(){
@@ -93,6 +102,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 		
 		for(Player p: server.getOnlinePlayers()){
 			showAllFor(p);
+			showPlayer(p);
 			clearItems(p);
 			tributes.add(new Tribute(p));
 		}
@@ -113,6 +123,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 				i = 0;
 			
 			Location to = ServerGames.tubes.get(i);
+			getTribute(p).start = to;
 			showAllFor(p);
 			p.teleport(toCenter(to));
 			p.setSprinting(false);
@@ -186,12 +197,15 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void startDeath(){
-		Location x = this.toCenter(ServerGames.tubes.get(ServerGames.tubes.size() / 2)), y = this.toCenter(ServerGames.tubes.get(0));
-		Player xx = ServerGames.tributes.get(0).player, yy = ServerGames.tributes.get(1).player;
-		xx.teleport(x);
-		yy.teleport(y);
-		Listener.tell(xx, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
-		Listener.tell(yy, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "The deathmatch will now start");
+		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "The deathmatch will now start");
+		for(Tribute t: ServerGames.tributes){
+			t.player.teleport(t.start);
+			tell(t.player, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+		}
+		for(Spectator s: ServerGames.spectators){
+			s.player.teleport(ServerGames.cornacopia);
+		}
 		
 		cancelTasks();
 		
@@ -480,5 +494,9 @@ public class ServerGames extends JavaPlugin implements Listener{
 			return true;
 		
 		return false;
+	}
+	
+	public void tell(Player p, String m){
+		p.sendMessage(m);
 	}
 }
