@@ -118,6 +118,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 			p.setSprinting(false);
 			p.setSneaking(false);
 			p.setPassenger(null);
+            p.setExp(0);
 			this.clearItems(p);
 			p.setGameMode(GameMode.SURVIVAL);
 			p.setFireTicks(0);

@@ -189,7 +189,8 @@ public class SGListener implements Listener {
 				tell(player, RED + "[ServerGames] You do not have permission to do this.");
 				return;
 			}
-			
+
+            ServerGames.tributes.remove(player);
 			player.teleport(ServerGames.waiting);
 		}
 
