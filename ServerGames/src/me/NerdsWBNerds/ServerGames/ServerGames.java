@@ -1,7 +1,6 @@
 package me.NerdsWBNerds.ServerGames;
 
-import static org.bukkit.ChatColor.GOLD;
-import static org.bukkit.ChatColor.GREEN;
+import static org.bukkit.ChatColor.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -197,10 +196,14 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void startDeath(){
-		server.broadcastMessage(GOLD + "[ServerGames] " + GREEN + "The deathmatch will now start");
+		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "The deathmatch will now start");
+		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "The deathmatch will now start");
 		for(Tribute t: ServerGames.tributes){
 			t.player.teleport(t.start);
 			tell(t.player, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+		}
+		for(Spectator s: ServerGames.spectators){
+			s.player.teleport(ServerGames.cornacopia);
 		}
 		
 		cancelTasks();

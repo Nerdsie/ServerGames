@@ -446,9 +446,9 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onGM(PlayerGameModeChangeEvent e){
-		if(plugin.inGame() && !plugin.isTribute(e.getPlayer()) && e.getPlayer().getGameMode() == GameMode.SURVIVAL){
-			e.getPlayer().setGameMode(GameMode.CREATIVE);
-		}
+		//if(plugin.inGame() && !plugin.isTribute(e.getPlayer()) && e.getPlayer().getGameMode() == GameMode.SURVIVAL){
+			//e.getPlayer().setGameMode(GameMode.CREATIVE);
+		//}
 	}
 	
 	@EventHandler

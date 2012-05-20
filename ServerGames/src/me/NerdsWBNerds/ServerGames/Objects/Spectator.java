@@ -9,5 +9,6 @@ public class Spectator {
 	
 	public Spectator(Player p){
 		player = p;
+		ServerGames.hidePlayer(player);
 	}
 }
