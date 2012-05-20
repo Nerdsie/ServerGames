@@ -22,7 +22,7 @@ public class Tribute {
 
 		ServerGames.hidePlayer(player);
         
-        player.setGameMode(GameMode.CREATIVE);
+        //player.setGameMode(GameMode.CREATIVE);
 	}
 	
 	public void leave(){
