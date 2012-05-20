@@ -224,10 +224,10 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onChat(PlayerChatEvent e){
-		e.setFormat(GRAY + "<" + AQUA + e.getPlayer().getName() + GRAY + "> " + WHITE + e.getMessage());
+		e.setFormat(GRAY + "<" + AQUA + e.getPlayer().getDisplayName() + GRAY + "> " + WHITE + e.getMessage());
 		
 		if(plugin.getTribute(e.getPlayer())==null)
-			e.setFormat(RED + "(SPEC)" + GRAY + "<" + AQUA + e.getPlayer().getName() + GRAY + "> " + WHITE + e.getMessage());
+			e.setFormat(RED + "(SPEC)" + GRAY + "<" + AQUA + e.getPlayer().getDisplayName() + GRAY + "> " + WHITE + e.getMessage());
 	}
 	
 	@EventHandler
@@ -236,26 +236,21 @@ public class SGListener implements Listener {
 			e.setKickMessage("[ServerGames] This game is currently full.");
 		}
 	}
-	
+
+	@EventHandler
 	public void onJoin(PlayerJoinEvent e){
 		Player player = e.getPlayer();
-
-		if(plugin.inGame() || plugin.inDeath() || plugin.inDone()){
-			player.setCompassTarget(ServerGames.cornacopia);
+		player.setCompassTarget(ServerGames.cornacopia);
+		
+		if(plugin.inSetup() || plugin.inGame() || plugin.inDeath() || plugin.inDone()){
 			ServerGames.spectators.add(new Spectator(player));
 			ServerGames.hidePlayer(player);
-			player.teleport(ServerGames.cornacopia);
 			player.setGameMode(GameMode.CREATIVE);
-
-			ServerGames.hidePlayer(player);
 			for(Spectator s : ServerGames.spectators){
-				ServerGames.hideAllFrom(s.player);
 				player.hidePlayer(s.player);
 			}
 		}else{
 			ServerGames.tributes.add(new Tribute(player));
-			player.setCompassTarget(ServerGames.cornacopia);
-			player.teleport(ServerGames.waiting);
 		}
 		
 		player.teleport(ServerGames.waiting);
@@ -303,9 +298,7 @@ public class SGListener implements Listener {
 			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			
-			if(ServerGames.tributes.size()==2){				
-				say(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
-
+			if(ServerGames.tributes.size()==2 && plugin.inGame()){				
 				plugin.startDeath();
 			}
 			
@@ -444,7 +437,7 @@ public class SGListener implements Listener {
 		}
 		
 		if(plugin.inDeath()){
-			if(y.distance(ServerGames.cornacopia) > 30 && x.distance(ServerGames.cornacopia) <= 30){
+			if(y.distance(ServerGames.cornacopia) > 40 && x.distance(ServerGames.cornacopia) <= 40){
 				ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + AQUA + e.getPlayer().getName() + GREEN + " tried to run from the fight!");
 				e.getPlayer().setHealth(0);
 			}
@@ -453,7 +446,7 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onGM(PlayerGameModeChangeEvent e){
-		if(plugin.inGame() && !plugin.isTribute(e.getPlayer())){
+		if(plugin.inGame() && !plugin.isTribute(e.getPlayer()) && e.getPlayer().getGameMode() == GameMode.SURVIVAL){
 			e.getPlayer().setGameMode(GameMode.CREATIVE);
 		}
 	}

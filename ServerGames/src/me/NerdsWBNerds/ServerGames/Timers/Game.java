@@ -2,9 +2,11 @@ package me.NerdsWBNerds.ServerGames.Timers;
 
 import static org.bukkit.ChatColor.*;
 import me.NerdsWBNerds.ServerGames.ServerGames;
+import me.NerdsWBNerds.ServerGames.Objects.Chests;
 
 public class Game extends CurrentState{
 	ServerGames plugin;
+	int ticks = 0;
 	
 	public Game(ServerGames p){
 		plugin = p;
@@ -24,6 +26,16 @@ public class Game extends CurrentState{
 			plugin.startDeath();
 		}
 		
+		if(ticks == 13200){
+			ServerGames.loaded.clear();
+			Chests.resetChests();
+		}
+		
+		if(ticks == 13200 + 8400){
+			ticks = 0;
+		}
+		
+		ticks++;
 		time--;
 	}
 }
