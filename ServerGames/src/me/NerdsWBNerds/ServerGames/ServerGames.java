@@ -4,6 +4,7 @@ import static org.bukkit.ChatColor.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import de.diddiz.LogBlock.QueryParams;
@@ -39,6 +40,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public int max = 24;
 	public static State state = null;
 	public static CurrentState game = null;
+	public HashMap<Player, Integer> score = new HashMap<Player, Integer>();
 	public static ArrayList<Location> tubes = new ArrayList<Location>();
 	public static ArrayList<Tribute> tributes = new ArrayList<Tribute>();
 	public static ArrayList<Spectator> spectators = new ArrayList<Spectator>();
@@ -59,7 +61,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 		new File(path).mkdir();
 		load();
 		
-		this.resetPlayers();
+		hardResetPlayers();
 
 		tpAll(waiting);
 		
@@ -83,8 +85,18 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 
 	public void resetPlayers(){
-		tributes = new ArrayList<Tribute>();
-		for(Player p : server.getOnlinePlayers()){
+		ArrayList<Tribute> hold = new ArrayList<Tribute>();
+		for(Tribute t: tributes){
+			hold.add(t);
+		}
+		
+		for(Spectator s: spectators){
+			hold.add(new Tribute(s.player));
+		}
+	}
+	
+	public void hardResetPlayers(){
+		for(Player p: server.getOnlinePlayers()){
 			tributes.add(new Tribute(p));
 		}
 	}
@@ -103,8 +115,6 @@ public class ServerGames extends JavaPlugin implements Listener{
 		for(Player p: server.getOnlinePlayers()){
 			showAllFor(p);
 			showPlayer(p);
-			clearItems(p);
-			tributes.add(new Tribute(p));
 		}
 		
 		this.resetPlayers();
@@ -117,23 +127,25 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public void startSetup(){
 		int i = 0;
-		
+
 		for(Player p : server.getOnlinePlayers()){
-			if(i >= ServerGames.tubes.size())
-				i = 0;
-			
-			Location to = ServerGames.tubes.get(i);
-			getTribute(p).start = to;
-			showAllFor(p);
-			p.teleport(toCenter(to));
-			p.setSprinting(false);
-			p.setSneaking(false);
-			p.setPassenger(null);
-			this.clearItems(p);
-			p.setGameMode(GameMode.SURVIVAL);
-			p.setFireTicks(0);
-			
-			i++;
+			if(isTribute(p)){
+				if(i >= ServerGames.tubes.size())
+					i = 0;
+				
+				Location to = ServerGames.tubes.get(i);
+				showAllFor(p);
+				p.setSprinting(false);
+				p.setSneaking(false);
+				p.setPassenger(null);
+				p.setGameMode(GameMode.SURVIVAL);
+				p.setFireTicks(0);
+				clearItems(p);
+				getTribute(p).start = to;
+				p.teleport(toCenter(to));
+				
+				i++;
+			}
 		}
 
 		cornacopia.getWorld().getEntities().clear();
@@ -162,7 +174,7 @@ public class ServerGames extends JavaPlugin implements Listener{
         this.getServer().broadcastMessage(GOLD + "[SurvivalGames] " + GREEN + "Map has been reset!");
         
         for(Entity e : cornacopia.getWorld().getEntities()){
-            if(e.getType() == EntityType.DROPPED_ITEM){
+            if(e.getType() == EntityType.DROPPED_ITEM || e.getType() == EntityType.CREEPER || e.getType() == EntityType.SKELETON || e.getType() == EntityType.SPIDER || e.getType() == EntityType.ENDERMAN){
                 e.remove();
             }
         }
@@ -252,8 +264,11 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void tpAll(Location l){
-		for(Player p:server.getOnlinePlayers()){
-			p.teleport(l);
+		for(Tribute t: tributes){
+			t.player.teleport(l);
+		}
+		for(Spectator s: spectators){
+			s.player.teleport(l);
 		}
 	}
 	
@@ -383,6 +398,30 @@ public class ServerGames extends JavaPlugin implements Listener{
 			}
 		}
 		
+		//////////// --------- Waiting End ------------ ///////////////	
+		//////////// --------- Waiting ------------ ///////////////
+
+		if(score != null){
+			file = new File(path + File.separator + "Score.loc");
+			new File(path).mkdir();
+			if(!file.exists()){
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			try{
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path + File.separator + "Score.loc"));
+				oos.writeObject(score);
+				oos.flush();
+				oos.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
 		//////////// --------- Waiting End ------------ ///////////////
 	}
 	
@@ -431,7 +470,17 @@ public class ServerGames extends JavaPlugin implements Listener{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		//////////// --------- Waiting End ------------ ///////////////
+		//////////// --------- Waiting End ------------ ///////////////	
+		//////////// --------- Score ------------ ///////////////
+		try{
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path + File.separator + "Score.loc"));
+			Object result = ois.readObject();
+			
+			score = (HashMap<Player, Integer>) result; 
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		//////////// --------- Score End ------------ ///////////////
 	}
 
 	public boolean inGame(){
@@ -495,7 +544,36 @@ public class ServerGames extends JavaPlugin implements Listener{
 		return false;
 	}
 	
+	public boolean isSpectator(Player player){
+		if(getSpectator(player)!= null){
+			return true;
+		}
+		
+		return false;
+	}
+	
 	public void tell(Player p, String m){
 		p.sendMessage(m);
+	}
+	
+	public void addScore(Player player, int add){
+		if(score.containsKey(player))
+			this.score.put(player, this.score.get(player) + add);
+		else
+			this.score.put(player, add);
+	}
+	
+	public int getScore(Player player){
+		if(!score.containsKey(player))
+			return 0;
+		else
+			return score.get(player);
+	}
+	
+	public void subtractScore(Player player, int take){
+		if(score.containsKey(player) && score.get(player) - take >= 0)
+			this.score.put(player, this.score.get(player) - take);
+		else
+			this.score.put(player, 0);
 	}
 }

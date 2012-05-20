@@ -33,7 +33,10 @@ public class Chests {
 	    				ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>();
 	    				Chest chestBlock = (Chest)tileEntity;
 	    				Random rnd = new Random();
-	    				for(int i = 0; i < 27; i++){
+	    				
+	    				int max = 27;
+	    				    				
+	    				for(int i = 0; i < max; i++){
 	    					arrayList.add(new ItemStack(items.get(rnd.nextInt(items.size())), 1));
 	    				}
 	    				setChest(chestBlock, arrayList);

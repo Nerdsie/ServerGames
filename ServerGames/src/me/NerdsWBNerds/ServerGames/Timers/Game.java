@@ -26,13 +26,12 @@ public class Game extends CurrentState{
 			plugin.startDeath();
 		}
 		
-		if(ticks == 13200){
+		long wTime = ServerGames.cornacopia.getWorld().getTime();
+		if(wTime >= 13200 && wTime < 13220){
 			ServerGames.loaded.clear();
 			Chests.resetChests();
-		}
-		
-		if(ticks == 13200 + 8400){
-			ticks = 0;
+			
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + GREEN + "All the chests have been refilled.");
 		}
 		
 		ticks++;

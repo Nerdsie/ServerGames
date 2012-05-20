@@ -1,6 +1,7 @@
 package me.NerdsWBNerds.ServerGames;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import me.NerdsWBNerds.ServerGames.Objects.Chests;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
@@ -193,6 +194,26 @@ public class SGListener implements Listener {
             ServerGames.tributes.remove(player);
 			player.teleport(ServerGames.waiting);
 		}
+		
+		if(args[0].equalsIgnoreCase("/score")){
+			e.setCancelled(true);
+			Player target = player;
+			
+			if(args.length==2){
+				target = plugin.server.getPlayer(args[1]);
+			}
+			
+			tell(player, GOLD + "[ServerGames] " + AQUA + target.getName() + GREEN + " has a score of " + AQUA + plugin.getScore(target));
+		}
+		
+		if(args[0].equalsIgnoreCase("/leave") || args[0].equalsIgnoreCase("/quit")){
+			e.setCancelled(true);
+			
+			plugin.removeSpectator(player);
+			plugin.removeTribute(player);
+			
+			tell(player, GOLD + "[ServerGames] " + GREEN + "You have left the game.");
+		}
 
 		if(args[0].equalsIgnoreCase("/start")){
 			e.setCancelled(true);
@@ -237,30 +258,24 @@ public class SGListener implements Listener {
 			e.setKickMessage("[ServerGames] This game is currently full.");
 		}
 	}
-	
+
+	@EventHandler
 	public void onJoin(PlayerJoinEvent e){
 		Player player = e.getPlayer();
-
-		if(plugin.inGame() || plugin.inDeath() || plugin.inDone()){
-			player.setCompassTarget(ServerGames.cornacopia);
+		player.setCompassTarget(ServerGames.cornacopia);
+		
+		if(plugin.inGame() || plugin.inDeath() || plugin.inDone() || plugin.inSetup()){
 			ServerGames.spectators.add(new Spectator(player));
-			ServerGames.hidePlayer(player);
-			player.teleport(ServerGames.cornacopia);
-			player.setGameMode(GameMode.CREATIVE);
-
-			ServerGames.hidePlayer(player);
+			
 			for(Spectator s : ServerGames.spectators){
 				ServerGames.hideAllFrom(s.player);
 				player.hidePlayer(s.player);
 			}
 		}else{
 			ServerGames.tributes.add(new Tribute(player));
-			player.setCompassTarget(ServerGames.cornacopia);
-			player.teleport(ServerGames.waiting);
+			player.setGameMode(GameMode.SURVIVAL);
 		}
 		
-		player.teleport(ServerGames.waiting);
-			
 	}
 
 	@EventHandler
@@ -301,6 +316,7 @@ public class SGListener implements Listener {
 		
 		if((plugin.inDeath()|| plugin.inGame() || plugin.inSetup()) && plugin.isTribute(player)){
 			plugin.getTribute(player).die();
+			plugin.subtractScore(player, 10);
 			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			
@@ -345,7 +361,7 @@ public class SGListener implements Listener {
 			e.setCancelled(true);
 		}
 		
-		if(!plugin.isTribute(player)){
+		if(plugin.isSpectator(player)){
 			e.setCancelled(true);
 			
 			if(!spec.containsKey(player)){
@@ -396,10 +412,15 @@ public class SGListener implements Listener {
 	public void onHurtByOther(EntityDamageByEntityEvent e){
 		if(e.getEntity() instanceof Player && e.getDamager() instanceof Player){
 			Player hit = (Player) e.getDamager();
+			Player hurt = (Player) e.getEntity();
 
 			if(!plugin.isTribute(hit)){
 				e.setCancelled(true);
 				e.setDamage(0);
+			}
+			
+			if(plugin.isTribute(hit) && plugin.isTribute(hurt) && hurt.getHealth() <= 0){
+				plugin.addScore(hit, 10);
 			}
 		}
 	}
@@ -407,8 +428,6 @@ public class SGListener implements Listener {
 	@EventHandler
 	public void onLeave(PlayerQuitEvent e){
 		Player player = e.getPlayer();
-		
-		ServerGames.tributes.remove(plugin.getTribute(player));
 		
 		ServerGames.showPlayer(player);
 		ServerGames.showAllFor(player);
@@ -421,7 +440,7 @@ public class SGListener implements Listener {
 			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			
-			if(ServerGames.tributes.size()==2){				
+			if(ServerGames.tributes.size()==2 && plugin.inGame()){				
 				say(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
 
 				plugin.startDeath();
@@ -432,7 +451,6 @@ public class SGListener implements Listener {
 				plugin.startFinished();
 			}
 		}
-		
 	}
 
 	@EventHandler
@@ -454,9 +472,9 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onGM(PlayerGameModeChangeEvent e){
-		if(plugin.inGame() && !plugin.isTribute(e.getPlayer())){
-			e.getPlayer().setGameMode(GameMode.CREATIVE);
-		}
+		//if(plugin.inGame() && !plugin.isTribute(e.getPlayer())){
+			//e.getPlayer().setGameMode(GameMode.CREATIVE);
+		//}
 	}
 	
 	@EventHandler
