@@ -40,7 +40,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public int max = 24;
 	public static State state = null;
 	public static CurrentState game = null;
-	public HashMap<Player, Integer> score = new HashMap<Player, Integer>();
+	public HashMap<String, Integer> score = new HashMap<String, Integer>();
 	public static ArrayList<Location> tubes = new ArrayList<Location>();
 	public static ArrayList<Tribute> tributes = new ArrayList<Tribute>();
 	public static ArrayList<Spectator> spectators = new ArrayList<Spectator>();
@@ -93,6 +93,9 @@ public class ServerGames extends JavaPlugin implements Listener{
 		for(Spectator s: spectators){
 			hold.add(new Tribute(s.player));
 		}
+		
+		ServerGames.spectators.clear();
+		ServerGames.tributes = hold;
 	}
 	
 	public void hardResetPlayers(){
@@ -103,9 +106,6 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public void startLobby(){
 		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Countdown started.");
-
-		spectators.clear();
-		tributes.clear();
 		
 		cancelTasks();
 		
@@ -174,7 +174,7 @@ public class ServerGames extends JavaPlugin implements Listener{
         this.getServer().broadcastMessage(GOLD + "[SurvivalGames] " + GREEN + "Map has been reset!");
         
         for(Entity e : cornacopia.getWorld().getEntities()){
-            if(e.getType() == EntityType.DROPPED_ITEM || e.getType() == EntityType.CREEPER || e.getType() == EntityType.SKELETON || e.getType() == EntityType.SPIDER || e.getType() == EntityType.ENDERMAN){
+            if(e.getType() == EntityType.DROPPED_ITEM || e.getType() == EntityType.CREEPER || e.getType() == EntityType.SKELETON || e.getType() == EntityType.SPIDER || e.getType() == EntityType.ENDERMAN || e.getType() == EntityType.ZOMBIE){
                 e.remove();
             }
         }
@@ -208,8 +208,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void startDeath(){
-		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "The deathmatch will now start");
-		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "The deathmatch will now start");
+		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "The deathmatch will now start.");
+		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "Do not run from the deathmatch.");
 		for(Tribute t: ServerGames.tributes){
 			t.player.teleport(t.start);
 			tell(t.player, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
@@ -476,49 +476,49 @@ public class ServerGames extends JavaPlugin implements Listener{
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path + File.separator + "Score.loc"));
 			Object result = ois.readObject();
 			
-			score = (HashMap<Player, Integer>) result; 
+			score = (HashMap<String, Integer>) result; 
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		//////////// --------- Score End ------------ ///////////////
 	}
 
-	public boolean inGame(){
+	public static boolean inGame(){
 		if(state == State.IN_GAME)
 			return true;
 			
 		return false;
 	}
 	
-	public boolean inLobby(){
+	public static boolean inLobby(){
 		if(state == State.LOBBY)
 			return true;
 		
 		return false;
 	}
 	
-	public boolean inSetup(){
+	public static boolean inSetup(){
 		if(state == State.SET_UP)
 			return true;
 		
 		return false;
 	}
 	
-	public boolean inDone(){
+	public static boolean inDone(){
 		if(state == State.DONE)
 			return true;
 		
 		return false;
 	}
 	
-	public boolean inDeath(){
+	public static boolean inDeath(){
 		if(state == State.DEATHMATCH)
 			return true;
 		
 		return false;
 	}
 	
-	public boolean inNothing(){
+	public static boolean inNothing(){
 		if(state == null)
 			return true;
 		
@@ -557,23 +557,27 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void addScore(Player player, int add){
-		if(score.containsKey(player))
-			this.score.put(player, this.score.get(player) + add);
+		if(score.containsKey(player.getName()))
+			this.score.put(player.getName(), this.score.get(player.getName()) + add);
 		else
-			this.score.put(player, add);
+			this.score.put(player.getName(), add);
+		
+		save();
 	}
 	
 	public int getScore(Player player){
-		if(!score.containsKey(player))
+		if(!score.containsKey(player.getName()))
 			return 0;
 		else
-			return score.get(player);
+			return score.get(player.getName());
 	}
 	
 	public void subtractScore(Player player, int take){
-		if(score.containsKey(player) && score.get(player) - take >= 0)
-			this.score.put(player, this.score.get(player) - take);
+		if(score.containsKey(player.getName()) && score.get(player.getName()) - take >= 0)
+			this.score.put(player.getName(), this.score.get(player.getName()) - take);
 		else
-			this.score.put(player, 0);
+			this.score.put(player.getName(), 0);
+		
+		save();
 	}
 }

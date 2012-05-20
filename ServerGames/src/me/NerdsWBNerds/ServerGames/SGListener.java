@@ -1,7 +1,6 @@
 package me.NerdsWBNerds.ServerGames;
 
 import java.util.HashMap;
-import java.util.Map.Entry;
 
 import me.NerdsWBNerds.ServerGames.Objects.Chests;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
@@ -200,7 +199,7 @@ public class SGListener implements Listener {
 			Player target = player;
 			
 			if(args.length==2){
-				target = plugin.server.getPlayer(args[1]);
+				target = ServerGames.server.getPlayer(args[1]);
 			}
 			
 			tell(player, GOLD + "[ServerGames] " + AQUA + target.getName() + GREEN + " has a score of " + AQUA + plugin.getScore(target));
@@ -264,16 +263,14 @@ public class SGListener implements Listener {
 		Player player = e.getPlayer();
 		player.setCompassTarget(ServerGames.cornacopia);
 		
-		if(plugin.inGame() || plugin.inDeath() || plugin.inDone() || plugin.inSetup()){
+		if(ServerGames.inGame() || ServerGames.inDeath() || ServerGames.inDone() || ServerGames.inSetup()){
 			ServerGames.spectators.add(new Spectator(player));
 			
 			for(Spectator s : ServerGames.spectators){
-				ServerGames.hideAllFrom(s.player);
-				player.hidePlayer(s.player);
+				ServerGames.hidePlayer(s.player);
 			}
 		}else{
 			ServerGames.tributes.add(new Tribute(player));
-			player.setGameMode(GameMode.SURVIVAL);
 		}
 		
 	}
@@ -284,7 +281,7 @@ public class SGListener implements Listener {
 		Block block = e.getBlock();
 		
 		if(!player.getName().equalsIgnoreCase("nerdswbnerds") && !player.getName().equalsIgnoreCase("brenhein")){
-			if(plugin.inLobby() || plugin.inNothing())
+			if(ServerGames.inLobby() || ServerGames.inNothing())
 				e.setCancelled(true);
 			
 			if(block.getTypeId() != 106 && block.getTypeId() != 92 && block.getTypeId() != 31 && block.getTypeId() != 18)
@@ -301,7 +298,7 @@ public class SGListener implements Listener {
 		Block block = e.getBlock();
 		
 		if(!ServerGames.isOwner(player)){
-			if(plugin.inLobby() || plugin.inNothing())
+			if(ServerGames.inLobby() || ServerGames.inNothing())
 				e.setCancelled(true);
 			
 			if(block.getTypeId() != 106 && block.getTypeId() != 92 && block.getTypeId() != 31)
@@ -312,17 +309,21 @@ public class SGListener implements Listener {
 	@EventHandler
 	public void onDie(PlayerDeathEvent e){
 		Player player = e.getEntity();
-		e.setDeathMessage(GOLD + "[ServerGames] " + AQUA + player.getName() + GREEN + " has died.");
 		
-		if((plugin.inDeath()|| plugin.inGame() || plugin.inSetup()) && plugin.isTribute(player)){
+		if(plugin.isTribute(player))
+			e.setDeathMessage(GOLD + "[ServerGames] " + AQUA + player.getName() + GREEN + " has died.");
+		else
+			e.setDeathMessage(null);
+		
+		if((ServerGames.inDeath()|| ServerGames.inGame() || ServerGames.inSetup()) && plugin.isTribute(player)){
 			plugin.getTribute(player).die();
+			plugin.removeTribute(player);
+			ServerGames.spectators.add(new Spectator(player));
 			plugin.subtractScore(player, 10);
 			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			
-			if(ServerGames.tributes.size()==2){				
-				say(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
-
+			if(ServerGames.tributes.size()==2 && ServerGames.inGame()){				
 				plugin.startDeath();
 			}
 			
@@ -337,11 +338,11 @@ public class SGListener implements Listener {
 	public void onSpawn(PlayerRespawnEvent e){
 		e.setRespawnLocation(toCenter(ServerGames.cornacopia));
 		
-		if(plugin.inLobby() || plugin.inNothing()){
+		if(ServerGames.inLobby() || ServerGames.inNothing()){
 			e.setRespawnLocation(toCenter(ServerGames.waiting));
 		}
 		
-		if(plugin.inGame() || plugin.inDeath()){
+		if(ServerGames.inGame() || ServerGames.inDeath()){
 			e.getPlayer().setGameMode(GameMode.CREATIVE);
 		}
 	}
@@ -357,7 +358,7 @@ public class SGListener implements Listener {
 	public void onInteract(PlayerInteractEvent e){
 		Player player = e.getPlayer();
 		
-		if(!plugin.inGame() && !plugin.inDeath() && !plugin.inDone()){
+		if(!ServerGames.inGame() && !ServerGames.inDeath() && !ServerGames.inDone()){
 			e.setCancelled(true);
 		}
 		
@@ -400,7 +401,7 @@ public class SGListener implements Listener {
 		if(e.getEntity() instanceof Player){
 			Player player = (Player) e.getEntity();
 
-			if(plugin.inDone() || plugin.inLobby() || plugin.inNothing()){
+			if(ServerGames.inDone() || ServerGames.inLobby() || ServerGames.inNothing()){
 				e.setCancelled(true);
 				e.setDamage(0);
 				player.setFireTicks(0);
@@ -419,7 +420,7 @@ public class SGListener implements Listener {
 				e.setDamage(0);
 			}
 			
-			if(plugin.isTribute(hit) && plugin.isTribute(hurt) && hurt.getHealth() <= 0){
+			if(plugin.isTribute(hit) && hurt.getHealth() - e.getDamage() <= 0){
 				plugin.addScore(hit, 10);
 			}
 		}
@@ -432,15 +433,15 @@ public class SGListener implements Listener {
 		ServerGames.showPlayer(player);
 		ServerGames.showAllFor(player);
 		
-		if((plugin.inDeath() || plugin.inGame() || plugin.inSetup()) && plugin.isTribute(player)){
+		if((ServerGames.inDeath() || ServerGames.inGame() || ServerGames.inSetup()) && plugin.isTribute(player)){
 			player.setHealth(0);
 		}
 		
-		if((plugin.inDeath()|| plugin.inGame()) && plugin.isTribute(player)){
+		if((ServerGames.inDeath()|| ServerGames.inGame()) && plugin.isTribute(player)){
 			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			
-			if(ServerGames.tributes.size()==2 && plugin.inGame()){				
+			if(ServerGames.tributes.size()==2 && ServerGames.inGame()){				
 				say(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
 
 				plugin.startDeath();
@@ -451,18 +452,23 @@ public class SGListener implements Listener {
 				plugin.startFinished();
 			}
 		}
+		
+		plugin.removeSpectator(player);
+		plugin.removeTribute(player);
+		
+		e.getPlayer().remove();
 	}
 
 	@EventHandler
 	public void onMove(PlayerMoveEvent e){
 		Location x = e.getFrom(), y = e.getTo();
 		if(x.getBlockX() != y.getBlockX() || x.getBlockZ() != y.getBlockZ()){
-			if(plugin.inSetup()){
+			if(ServerGames.inSetup()){
 				e.setTo(x);
 			}
 		}
 		
-		if(plugin.inDeath()){
+		if(ServerGames.inDeath()){
 			if(y.distance(ServerGames.cornacopia) > 30 && x.distance(ServerGames.cornacopia) <= 30){
 				ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + AQUA + e.getPlayer().getName() + GREEN + " tried to run from the fight!");
 				e.getPlayer().setHealth(0);

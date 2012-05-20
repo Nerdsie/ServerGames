@@ -12,25 +12,18 @@ public class Tribute {
 	
 	public Tribute(Player player){
 		this.player = player;
+		player.setGameMode(GameMode.SURVIVAL);
+		player.teleport(ServerGames.waiting);
 	}
 	
 	public void die(){
-		ServerGames.tributes.remove(this);
-
 		Location strike = new Location(ServerGames.cornacopia.getWorld(), ServerGames.cornacopia.getBlockX(), ServerGames.cornacopia.getBlockY() + 20, ServerGames.cornacopia.getZ());
-		
 		ServerGames.cornacopia.getWorld().strikeLightning(strike);
-
 		ServerGames.hidePlayer(player);
-        
-        //player.setGameMode(GameMode.CREATIVE);
 	}
 	
 	public void leave(){
-		ServerGames.tributes.remove(this);
-
 		Location strike = new Location(ServerGames.cornacopia.getWorld(), ServerGames.cornacopia.getBlockX(), ServerGames.cornacopia.getBlockY() + 20, ServerGames.cornacopia.getZ());
-		
 		ServerGames.cornacopia.getWorld().strikeLightning(strike);
 	}
 }
