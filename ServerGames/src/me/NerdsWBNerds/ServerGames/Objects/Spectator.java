@@ -13,9 +13,8 @@ public class Spectator {
 		ServerGames.hidePlayer(player);
 		player.setGameMode(GameMode.CREATIVE);
 		
-		if(ServerGames.inNothing() || ServerGames.inLobby())
-			player.teleport(ServerGames.waiting);
-		else
-			player.teleport(ServerGames.cornacopia);
+		for(Spectator s : ServerGames.spectators){
+			ServerGames.hidePlayer(s.player);
+		}
 	}
 }

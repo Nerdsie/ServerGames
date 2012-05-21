@@ -13,7 +13,6 @@ public class Tribute {
 	public Tribute(Player player){
 		this.player = player;
 		player.setGameMode(GameMode.SURVIVAL);
-		player.teleport(ServerGames.waiting);
 	}
 	
 	public void die(){

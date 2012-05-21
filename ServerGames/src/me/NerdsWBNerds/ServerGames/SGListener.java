@@ -1,11 +1,14 @@
 package me.NerdsWBNerds.ServerGames;
 
+import java.awt.Color;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 
 import me.NerdsWBNerds.ServerGames.Objects.Chests;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -122,7 +125,7 @@ public class SGListener implements Listener {
 			}
 		}
 		
-		if(args[0].equalsIgnoreCase("/final")){
+		if(args[0].equalsIgnoreCase("/final") || args[0].equalsIgnoreCase("/dm") || args[0].equalsIgnoreCase("/deathmatch")){
 			e.setCancelled(true);
 			
 			if(!player.isOp()){
@@ -180,6 +183,59 @@ public class SGListener implements Listener {
 			}
 			
 			player.teleport(ServerGames.cornacopia);
+		}
+		
+		if(args[0].equalsIgnoreCase("/info")){
+			e.setCancelled(true);
+			
+			DecimalFormat rdec = new DecimalFormat("#");  
+			
+			tell(player, GOLD + "**Current Server Game Info**");
+			tell(player, GREEN + "There is " + AQUA + rdec.format(ServerGames.game.time / 60) + GREEN + " minute(s) " + AQUA + (ServerGames.game.time % 60) + GREEN + " second(s) remaining.");
+			tell(player, GREEN + "There are " + AQUA + ServerGames.tributes.size() + "/" + ServerGames.server.getOnlinePlayers().length + GREEN + " tribute(s) remaining.");
+			tell(player, GREEN + "The highest ranked player in this game is " + AQUA + plugin.topInGame() + GREEN + " with " + AQUA + plugin.getScore(plugin.topInGame()) + GREEN + " points.");
+		}
+
+		if(args[0].equalsIgnoreCase("/bug")){
+			e.setCancelled(true);
+
+			String bug = e.getMessage().replaceFirst("/bug ", "");
+			ServerGames.bugs.add(bug + " - " + player.getName()); 
+		}
+
+		if(args[0].equalsIgnoreCase("/clear")){
+			e.setCancelled(true);
+
+			if(!player.isOp()){
+				tell(player, RED + "[ServerGames] You do not have permission to do this.");
+				return;
+			}
+
+			plugin.score.clear();
+			plugin.save();
+		}
+		
+		if(args[0].equalsIgnoreCase("/top") || args[0].equalsIgnoreCase("/top10")){
+			e.setCancelled(true);
+
+			tell(player, GOLD + "**Server Games Top " + plugin.getTop().size() + "**");
+			for(int i = 0; i < plugin.getTop().size(); i++){
+				tell(player, AQUA + "" + i + ": " + GREEN + plugin.getTop().get(i) + " with " + plugin.getScore(plugin.getTop().get(i)) + " points.");
+			}
+		}
+		
+		if(args[0].equalsIgnoreCase("/to") || args[0].equalsIgnoreCase("/watch") || args[0].equalsIgnoreCase("/see") || args[0].equalsIgnoreCase("/spec") && args.length==2 && plugin.isSpectator(player)){
+			e.setCancelled(true);
+
+			Player target = ServerGames.server.getPlayer(args[1]);
+			
+			if(target != null && target.isOnline()){
+				player.teleport(target);
+
+				tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + target.getName());
+			}else{
+				tell(player, RED + "[ServerGames] Player not found.");
+			}
 		}
 		
 		if(args[0].equalsIgnoreCase("/tow")){
@@ -245,10 +301,15 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onChat(PlayerChatEvent e){
-		e.setFormat(GRAY + "<" + AQUA + e.getPlayer().getName() + GRAY + "> " + WHITE + e.getMessage());
+		ChatColor name = DARK_GREEN;
+		
+		if(e.getPlayer().isOp())
+			name = DARK_RED;
+		
+		e.setFormat(GRAY + "<" + AQUA + plugin.getScore(e.getPlayer()) + ": " + name + e.getPlayer().getName() + GRAY + "> " + WHITE + e.getMessage());
 		
 		if(plugin.getTribute(e.getPlayer())==null)
-			e.setFormat(RED + "(SPEC)" + GRAY + "<" + AQUA + e.getPlayer().getName() + GRAY + "> " + WHITE + e.getMessage());
+			e.setFormat(RED + "(SPEC)" + GRAY + "<" + AQUA + plugin.getScore(e.getPlayer()) + ": " + name + e.getPlayer().getName() + GRAY + "> " + WHITE + e.getMessage());
 	}
 	
 	@EventHandler
@@ -265,12 +326,10 @@ public class SGListener implements Listener {
 		
 		if(ServerGames.inGame() || ServerGames.inDeath() || ServerGames.inDone() || ServerGames.inSetup()){
 			ServerGames.spectators.add(new Spectator(player));
-			
-			for(Spectator s : ServerGames.spectators){
-				ServerGames.hidePlayer(s.player);
-			}
+			player.setGameMode(GameMode.CREATIVE);
 		}else{
 			ServerGames.tributes.add(new Tribute(player));
+			player.setGameMode(GameMode.SURVIVAL);
 		}
 		
 	}
@@ -345,6 +404,9 @@ public class SGListener implements Listener {
 		if(ServerGames.inGame() || ServerGames.inDeath()){
 			e.getPlayer().setGameMode(GameMode.CREATIVE);
 		}
+		
+		if(plugin.isSpectator(e.getPlayer()))
+			e.getPlayer().setGameMode(GameMode.CREATIVE);
 	}
 	
 	@EventHandler
@@ -365,25 +427,30 @@ public class SGListener implements Listener {
 		if(plugin.isSpectator(player)){
 			e.setCancelled(true);
 			
-			if(!spec.containsKey(player)){
-				Player toSpec = ServerGames.tributes.get(0).player;
-				
-				spec.put(player, 1);
-				player.teleport(toSpec);
-				tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
+			if(player.isSneaking()){
+				player.teleport(ServerGames.cornacopia);		
+				tell(player, GOLD + "[ServerGames] " + GREEN + "You are now at cornacopia.");
 			}else{
-				if(spec.get(player) >= ServerGames.tributes.size())
-					spec.put(player, 0);
-
-				Player toSpec = ServerGames.tributes.get(spec.get(player)).player;
-				
-				tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
-				player.teleport(toSpec);
-				spec.put(player, spec.get(player) + 1);
+				if(!spec.containsKey(player)){
+					Player toSpec = ServerGames.tributes.get(0).player;
+					
+					spec.put(player, 1);
+					player.teleport(toSpec);
+					tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
+				}else{
+					if(spec.get(player) >= ServerGames.tributes.size())
+						spec.put(player, 0);
+	
+					Player toSpec = ServerGames.tributes.get(spec.get(player)).player;
+					
+					tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
+					player.teleport(toSpec);
+					spec.put(player, spec.get(player) + 1);
+				}
 			}
 		}
 		
-		if(player.getName().equalsIgnoreCase("nerdswbnerds") || player.getName().equalsIgnoreCase("brenhein"))
+		if((!ServerGames.inGame() || (!plugin.isTribute(player) && !plugin.isSpectator(player))) && (player.getName().equalsIgnoreCase("nerdswbnerds") || player.getName().equalsIgnoreCase("brenhein")))
 			e.setCancelled(false);
 	}
 	
@@ -434,10 +501,6 @@ public class SGListener implements Listener {
 		ServerGames.showAllFor(player);
 		
 		if((ServerGames.inDeath() || ServerGames.inGame() || ServerGames.inSetup()) && plugin.isTribute(player)){
-			player.setHealth(0);
-		}
-		
-		if((ServerGames.inDeath()|| ServerGames.inGame()) && plugin.isTribute(player)){
 			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			
@@ -469,7 +532,7 @@ public class SGListener implements Listener {
 		}
 		
 		if(ServerGames.inDeath()){
-			if(y.distance(ServerGames.cornacopia) > 30 && x.distance(ServerGames.cornacopia) <= 30){
+			if(y.distance(ServerGames.cornacopia) > 40 && x.distance(ServerGames.cornacopia) <= 40){
 				ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + AQUA + e.getPlayer().getName() + GREEN + " tried to run from the fight!");
 				e.getPlayer().setHealth(0);
 			}

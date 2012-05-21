@@ -9,6 +9,7 @@ public class Deathmatch extends CurrentState{
 	public Deathmatch(ServerGames p){
 		plugin = p;
 		time = 60 * 2;
+		ServerGames.cornacopia.getWorld().setTime(0);
 	}
 	
 	public void run(){

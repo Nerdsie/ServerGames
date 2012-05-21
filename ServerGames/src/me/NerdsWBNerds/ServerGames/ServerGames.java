@@ -5,6 +5,7 @@ import static org.bukkit.ChatColor.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import de.diddiz.LogBlock.QueryParams;
@@ -42,6 +43,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public static CurrentState game = null;
 	public HashMap<String, Integer> score = new HashMap<String, Integer>();
 	public static ArrayList<Location> tubes = new ArrayList<Location>();
+	public static ArrayList<String> bugs = new ArrayList<String>();
 	public static ArrayList<Tribute> tributes = new ArrayList<Tribute>();
 	public static ArrayList<Spectator> spectators = new ArrayList<Spectator>();
 	public static ArrayList<Chunk> loaded = new ArrayList<Chunk>();
@@ -158,7 +160,7 @@ public class ServerGames extends JavaPlugin implements Listener{
         // ----- WORLD RESETTING -----
 		loaded.clear();
         Chests.resetChests();
-        this.getServer().broadcastMessage(GOLD + "[SurvivalGames] " + GREEN + "MAP IS RESETTING!");
+        this.getServer().broadcastMessage(GOLD + "[ServerGames] " + GREEN + "MAP IS RESETTING!");
 
 
         LogBlock logblock = (LogBlock)getServer().getPluginManager().getPlugin("LogBlock");
@@ -171,7 +173,7 @@ public class ServerGames extends JavaPlugin implements Listener{
             logblock.getCommandsHandler().new CommandRollback(this.getServer().getConsoleSender(), params, false);
         } catch(Exception e){}
 
-        this.getServer().broadcastMessage(GOLD + "[SurvivalGames] " + GREEN + "Map has been reset!");
+        this.getServer().broadcastMessage(GOLD + "[ServerGames] " + GREEN + "Map has been reset!");
         
         for(Entity e : cornacopia.getWorld().getEntities()){
             if(e.getType() == EntityType.DROPPED_ITEM || e.getType() == EntityType.CREEPER || e.getType() == EntityType.SKELETON || e.getType() == EntityType.SPIDER || e.getType() == EntityType.ENDERMAN || e.getType() == EntityType.ZOMBIE){
@@ -274,6 +276,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public void cancelTasks(){
 		this.getServer().getScheduler().cancelAllTasks();
+		game = null;
 	}
 	
 	public static void showPlayer(Player player){
@@ -399,7 +402,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 		}
 		
 		//////////// --------- Waiting End ------------ ///////////////	
-		//////////// --------- Waiting ------------ ///////////////
+		//////////// --------- Score ------------ ///////////////
 
 		if(score != null){
 			file = new File(path + File.separator + "Score.loc");
@@ -422,7 +425,31 @@ public class ServerGames extends JavaPlugin implements Listener{
 			}
 		}
 		
-		//////////// --------- Waiting End ------------ ///////////////
+		//////////// --------- Score End ------------ ///////////////	
+		//////////// --------- Bug ------------ ///////////////
+
+		if(score != null){
+			file = new File(path + File.separator + "Bugs.loc");
+			new File(path).mkdir();
+			if(!file.exists()){
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			try{
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path + File.separator + "Bugs.loc"));
+				oos.writeObject(bugs);
+				oos.flush();
+				oos.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+		//////////// --------- Bug End ------------ ///////////////
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -477,6 +504,16 @@ public class ServerGames extends JavaPlugin implements Listener{
 			Object result = ois.readObject();
 			
 			score = (HashMap<String, Integer>) result; 
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		//////////// --------- Score End ------------ ///////////////
+		//////////// --------- Score ------------ ///////////////
+		try{
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path + File.separator + "Bugs.loc"));
+			Object result = ois.readObject();
+			
+			bugs = (ArrayList<String>) result; 
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -566,10 +603,21 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public int getScore(Player player){
-		if(!score.containsKey(player.getName()))
-			return 0;
-		else
+		if(!score.containsKey(player.getName())){
+			score.put(player.getName(), 100);
+			return 100;
+		}else{
 			return score.get(player.getName());
+		}
+	}
+	
+	public int getScore(String player){
+		if(!score.containsKey(player)){
+			score.put(player, 100);
+			return 100;
+		}else{
+			return score.get(player);
+		}
 	}
 	
 	public void subtractScore(Player player, int take){
@@ -579,5 +627,45 @@ public class ServerGames extends JavaPlugin implements Listener{
 			this.score.put(player.getName(), 0);
 		
 		save();
+	}
+	
+	public String topInGame(){
+		String most = "";
+
+		for(Entry<String, Integer> info : score.entrySet()){
+			if(info.getValue() > getScore(most)){
+				most = info.getKey();
+			}
+		}
+		
+		return most;
+	}
+	
+	public ArrayList<String> getTop(){
+		String most = "";
+		ArrayList<String> top = new ArrayList<String>();
+		HashMap<String, Integer> hold = new HashMap<String, Integer>();
+		
+		for(Entry<String, Integer> e : score.entrySet()){
+			hold.put(e.getKey(), e.getValue());
+		}
+		
+		int theMax = 10;
+		if(hold.size()<10)
+			theMax = hold.size();
+		
+		for(int i = 0; i < theMax; i++){
+			for(Entry<String, Integer> info : hold.entrySet()){
+				if(info.getValue() > getScore(most)){
+					most = info.getKey();
+					System.out.println(info.getKey());
+				}
+			}
+			
+			top.add(most);
+			hold.remove(most);
+		}
+		
+		return top;
 	}
 }
