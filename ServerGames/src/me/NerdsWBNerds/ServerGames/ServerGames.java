@@ -71,6 +71,10 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void onDisable(){
+		clearAll();
+	}
+	
+	public void clearAll(){
 		this.cancelTasks();
 		
 		save();
@@ -109,7 +113,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public void startLobby(){
 		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Countdown started.");
 		
-		cancelTasks();
+		clearAll();
 		
 		load();
 		tpAll(waiting);
@@ -128,6 +132,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void startSetup(){
+		clearAll();
+		
 		int i = 0;
 
 		for(Player p : server.getOnlinePlayers()){
@@ -183,8 +189,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 
         // ----- WORLD RESETTING -----
 		
-		cancelTasks();
-		
+        load();
+        
 		state = State.SET_UP;
 		game = new Setup(this);
 		
@@ -192,8 +198,6 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void startGame(){
-		cancelTasks();
-		
 		state = State.IN_GAME;
 		
 		for(Player p : server.getOnlinePlayers()){
@@ -201,7 +205,10 @@ public class ServerGames extends JavaPlugin implements Listener{
 			p.setFoodLevel(20);
 			this.clearItems(p);
 		}
-			
+
+		clearAll();
+		load();
+		
 		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Let the game begin!");
 
 		game = new Game(this);
@@ -219,8 +226,9 @@ public class ServerGames extends JavaPlugin implements Listener{
 		for(Spectator s: ServerGames.spectators){
 			s.player.teleport(ServerGames.cornacopia);
 		}
-		
-		cancelTasks();
+
+		clearAll();
+		load();
 		
 		state = State.DEATHMATCH;
 		game = new Deathmatch(this);
@@ -229,7 +237,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void startFinished(){
-		cancelTasks();
+		clearAll();
+		load();
 		
 		state = State.DONE;
 		game = new Finished(this);
@@ -238,9 +247,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void stopAll(){
-		game = null;
-		state = null;
-		cancelTasks();
+		clearAll();
+		load();
 	}
 	
 	public void startTimer(){

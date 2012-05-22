@@ -531,7 +531,7 @@ public class SGListener implements Listener {
 			}
 		}
 		
-		if(ServerGames.inDeath()){
+		if(ServerGames.inDeath() && plugin.isTribute(e.getPlayer())){
 			if(y.distance(ServerGames.cornacopia) > 40 && x.distance(ServerGames.cornacopia) <= 40){
 				ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + AQUA + e.getPlayer().getName() + GREEN + " tried to run from the fight!");
 				e.getPlayer().setHealth(0);
