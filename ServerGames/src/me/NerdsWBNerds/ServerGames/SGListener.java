@@ -41,6 +41,8 @@ import static org.bukkit.ChatColor.*;
 public class SGListener implements Listener {
 	ServerGames plugin;
 	public HashMap<Player, Integer> spec = new HashMap<Player, Integer>();
+    // player to bet, betting player (confusing as tuna potatoes)
+    public HashMap<Player, Player> bets = new HashMap<Player, Player>();
 	
 	public SGListener(ServerGames s) {
 		plugin = s;
@@ -48,8 +50,19 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onCommand(PlayerCommandPreprocessEvent e){
+        
+       
+        
 		Player player = e.getPlayer();
 		String[] args = e.getMessage().split(" ");
+        
+        // player instance must be instanceof player
+        // console instance is NOT an instanceof player, therefore returning null
+        // oh those lovely nullpointers
+        if(player == null){
+            e.setCancelled(true);
+            return;        
+        }
 
 		if(args[0].equalsIgnoreCase("/add") && args.length == 1){
 			e.setCancelled(true);
@@ -297,6 +310,31 @@ public class SGListener implements Listener {
 				
 			plugin.startLobby();
 		}
+        
+        if(args[0].equalsIgnoreCase("/bet")){
+            e.setCancelled(true);
+            
+            if(!plugin.isTribute(e.getPlayer())){
+                try {
+                    if(args.length == 3 && Integer.parseInt(args[1]) > 0 && !bets.containsValue(player)){
+                        tell(player,GOLD + "[ServerGames]" + GREEN + " Added bet for player " + plugin.getServer().getPlayer(args[2]).getName() + " for " + args[1] + " points.");
+                        bets.put(plugin.getServer().getPlayer(args[2]), player);
+                        tell(plugin.getServer().getPlayer(args[2]), GOLD + "[ServerGames]" + GREEN + " A bet has been added for you!");
+                    } else {
+                        tell(player, RED + "[ServerGames] Bet number unacceptable [/bet [amount] [player]");
+                    }
+                } catch(Exception ef) { tell(player, RED + "[ServerGames] Bet unacceptable (/bet [amount] [player])"); }
+                
+            }
+            
+        }
+        
+        if(args[0].equalsIgnoreCase("/bets")){
+            say(GOLD + "[ServerGames] " + GREEN + "CURRENT STANDINGS:");
+            for(Player key : bets.keySet()){
+                say(GOLD + "[ServerGames] " + GREEN + "* " + key.getName() + " betted for by " + bets.get(key).getName());
+            }
+        }
 	}
 	
 	@EventHandler
@@ -315,7 +353,7 @@ public class SGListener implements Listener {
 	@EventHandler
 	public void onLogin(PlayerLoginEvent e){
 		if(e.getResult() == Result.KICK_FULL){
-			e.setKickMessage("[ServerGames] This game is currently full.");
+			e.setKickMessage(GOLD + "[ServerGames] This game is currently full.");
 		}
 	}
 
