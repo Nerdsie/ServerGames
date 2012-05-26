@@ -1,3 +1,52 @@
 name: ServerGames
 main: me.NerdsWBNerds.ServerGames.ServerGames
 version: 1.0
+commands:
+   bet:
+      description: Bet on current tributes.
+      usage: /bet <amount> <player>
+   bets:
+      description: View current bets.
+      usage: /bets
+   edit:
+      description: Toggle tube editing..
+      usage: /edit
+   start:
+      description: Start the game.
+      usage: /start
+   end:
+      description: Start finished.
+      usage: /end
+   dm:
+      description: Start deathmatch.
+      usage: /dm
+   score:
+      description: Check player's score.
+      usage: /score <player>
+   to:
+      description: Spectate someone.
+      usage: /to <player>
+   watch:
+      description: Spectate someone.
+      usage: /watch <player>
+   spec:
+      description: Spectate someone.
+      usage: /spec <player>
+   see:
+      description: Spectate someone.
+      usage: /see <player>
+   info:
+      description: View current lobby info.
+      usage: /info
+   sg:
+      description: View current lobby info.
+      usage: /sg
+   setWait:
+      description: Set waiting spawn location.
+      usage: /setwait
+   setCorn:
+      description: Set cornacopia location.
+      usage: /setcorn
+   force:
+      description: Force ending of game.
+      usage: /force

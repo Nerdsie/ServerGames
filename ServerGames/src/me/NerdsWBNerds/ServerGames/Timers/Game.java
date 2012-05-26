@@ -10,7 +10,7 @@ public class Game extends CurrentState{
 	
 	public Game(ServerGames p){
 		plugin = p;
-		time = 60 * 30;
+		time = 2 * ServerGames.server.getOnlinePlayers().length * 60;
 	}
 	
 	public void run(){
@@ -22,7 +22,7 @@ public class Game extends CurrentState{
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 minutes remaining.");
 		}if(time == 60 * 5){
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 5 minutes remaining.");
-		}if(time == 0){
+		}if(time <= 0){
 			plugin.startDeath();
 		}
 		
@@ -31,7 +31,7 @@ public class Game extends CurrentState{
 			ServerGames.loaded.clear();
 			Chests.resetChests();
 			
-			ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + GREEN + "All the chests have been refilled.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + DARK_AQUA + "All the chests have been refilled.");
 		}
 		
 		ticks++;

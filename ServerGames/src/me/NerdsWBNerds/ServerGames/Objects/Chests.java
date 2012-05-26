@@ -4,6 +4,7 @@ import me.NerdsWBNerds.ServerGames.ServerGames;
 import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
+import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -35,7 +36,11 @@ public class Chests {
 	    				Random rnd = new Random();
 	    				
 	    				int max = 27;
-	    				    				
+	    				    	
+	    				if (((Chest)chestBlock).getInventory() instanceof DoubleChestInventory){
+	    					max = 27 * 2;
+	    				}
+	    				
 	    				for(int i = 0; i < max; i++){
 	    					arrayList.add(new ItemStack(items.get(rnd.nextInt(items.size())), 1));
 	    				}

@@ -10,7 +10,7 @@ public class Setup extends CurrentState implements Runnable{
 	
 	public Setup(ServerGames p){
 		plugin = p;
-		time = 30;
+		time = 60;
 	}
 	
 	@Override

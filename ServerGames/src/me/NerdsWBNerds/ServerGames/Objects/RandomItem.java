@@ -3,9 +3,9 @@ package me.NerdsWBNerds.ServerGames.Objects;
 import org.bukkit.Material;
 
 public class RandomItem {
-	public static RandomItem air = new RandomItem(0, 300);
-	public static RandomItem stonesword = new RandomItem(272, 4);
-	public static RandomItem woodsword = new RandomItem(268, 6);
+	public static RandomItem air = new RandomItem(0, 275);
+	public static RandomItem stonesword = new RandomItem(272, 3);
+	public static RandomItem woodsword = new RandomItem(268, 4);
 	public static RandomItem leatherheml = new RandomItem(298, 2);
 	public static RandomItem leatherchest = new RandomItem(299, 2);
 	public static RandomItem leatherpants = new RandomItem(300, 2);
@@ -28,13 +28,16 @@ public class RandomItem {
     public static RandomItem goldlegs = new RandomItem(316, 1);
     public static RandomItem goldboots = new RandomItem(317, 1);
     public static RandomItem flint = new RandomItem(Material.FLINT, 6);
-    public static RandomItem goldSword = new RandomItem(283, 4);
+    public static RandomItem goldSword = new RandomItem(283, 3);
     public static RandomItem feather = new RandomItem(Material.FEATHER, 5);
-    public static RandomItem shear = new RandomItem(Material.SHEARS, 4);
-    public static RandomItem soup = new RandomItem(Material.MUSHROOM_SOUP, 4);
+    public static RandomItem shear = new RandomItem(Material.SHEARS, 2);
+    public static RandomItem boat = new RandomItem(Material.MUSHROOM_SOUP, 2);
+    public static RandomItem soup = new RandomItem(Material.BOAT, 2);
     public static RandomItem gApple = new RandomItem(Material.GOLDEN_APPLE, 1);
-    
-    //public static RandomItem gApple = bew
+    public static RandomItem bone = new RandomItem(Material.BONE, 3);
+    public static RandomItem bowl = new RandomItem(Material.BOWL, 2);
+    public static RandomItem rshroom = new RandomItem(Material.RED_MUSHROOM, 2);
+    public static RandomItem bshroom = new RandomItem(Material.BROWN_MUSHROOM, 2);
 	
 	public int id, chance;
 
@@ -49,7 +52,7 @@ public class RandomItem {
 	}
 	
 	public static RandomItem[] getAll(){
-		RandomItem[] ret = { gApple, soup, shear, flint, feather, air, stonesword, woodsword, leatherchest, leatherheml, leatherpants, leathershoes, apple, arrow, bow, compass, diamond, stick, chainboots, chainchest, chainhelm, chainpants, goldboots, goldchest, goldhelm, goldlegs, iron, gold, goldSword, bread};
+		RandomItem[] ret = { bone, bowl, rshroom, bshroom, boat, gApple, soup, shear, flint, feather, air, stonesword, woodsword, leatherchest, leatherheml, leatherpants, leathershoes, apple, arrow, bow, compass, diamond, stick, chainboots, chainchest, chainhelm, chainpants, goldboots, goldchest, goldhelm, goldlegs, iron, gold, goldSword, bread};
 		return ret;
 	}
 }

@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import de.diddiz.LogBlock.QueryParams;
+import me.NerdsWBNerds.ServerGames.Objects.Bet;
 import me.NerdsWBNerds.ServerGames.Objects.Chests;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
@@ -44,6 +45,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public HashMap<String, Integer> score = new HashMap<String, Integer>();
 	public static ArrayList<Location> tubes = new ArrayList<Location>();
 	public static ArrayList<String> bugs = new ArrayList<String>();
+	public static ArrayList<Bet> bets = new ArrayList<Bet>();
 	public static ArrayList<Tribute> tributes = new ArrayList<Tribute>();
 	public static ArrayList<Spectator> spectators = new ArrayList<Spectator>();
 	public static ArrayList<Chunk> loaded = new ArrayList<Chunk>();
@@ -68,26 +70,43 @@ public class ServerGames extends JavaPlugin implements Listener{
 		tpAll(waiting);
 		
 		//cornacopia.getWorld().setAutoSave(false);
+		
+		CommandExec cmd = new CommandExec(this);		
+		this.getCommand("start").setExecutor(cmd);
+		this.getCommand("end").setExecutor(cmd);
+		this.getCommand("dm").setExecutor(cmd);
+		this.getCommand("edit").setExecutor(cmd);
+		this.getCommand("bet").setExecutor(cmd);
+		this.getCommand("bets").setExecutor(cmd);
+		this.getCommand("score").setExecutor(cmd);
+		this.getCommand("to").setExecutor(cmd);
+		this.getCommand("setWait").setExecutor(cmd);
+		this.getCommand("setCorn").setExecutor(cmd);
+		this.getCommand("force").setExecutor(cmd);
+		this.getCommand("sg").setExecutor(cmd);
+		this.getCommand("watch").setExecutor(cmd);
+		this.getCommand("see").setExecutor(cmd);
+		this.getCommand("spec").setExecutor(cmd);
+		this.getCommand("info").setExecutor(cmd);
 	}
 	
 	public void onDisable(){
 		clearAll();
-	}
-	
-	public void clearAll(){
-		this.cancelTasks();
-		
+
 		save();
 		
-		tubes.clear();
 		tributes.clear();
 		spectators.clear();
 		loaded.clear();
-		spectators.clear();
+		tubes.clear();
 		game = null;
 		state = null;
 		cornacopia = null;
 		waiting = null;
+	}
+	
+	public void clearAll(){
+		this.cancelTasks();
 	}
 
 	public void resetPlayers(){
@@ -115,12 +134,17 @@ public class ServerGames extends JavaPlugin implements Listener{
 		
 		clearAll();
 		
+		bets.clear();
+		this.clearEnt();
 		load();
 		tpAll(waiting);
 		
 		for(Player p: server.getOnlinePlayers()){
 			showAllFor(p);
 			showPlayer(p);
+			
+			if(isTribute(p) || isSpectator(p))
+				clearItems(p);
 		}
 		
 		this.resetPlayers();
@@ -142,7 +166,6 @@ public class ServerGames extends JavaPlugin implements Listener{
 					i = 0;
 				
 				Location to = ServerGames.tubes.get(i);
-				showAllFor(p);
 				p.setSprinting(false);
 				p.setSneaking(false);
 				p.setPassenger(null);
@@ -166,8 +189,6 @@ public class ServerGames extends JavaPlugin implements Listener{
         // ----- WORLD RESETTING -----
 		loaded.clear();
         Chests.resetChests();
-        this.getServer().broadcastMessage(GOLD + "[ServerGames] " + GREEN + "MAP IS RESETTING!");
-
 
         LogBlock logblock = (LogBlock)getServer().getPluginManager().getPlugin("LogBlock");
         QueryParams params = new QueryParams(logblock);
@@ -179,16 +200,13 @@ public class ServerGames extends JavaPlugin implements Listener{
             logblock.getCommandsHandler().new CommandRollback(this.getServer().getConsoleSender(), params, false);
         } catch(Exception e){}
 
-        this.getServer().broadcastMessage(GOLD + "[ServerGames] " + GREEN + "Map has been reset!");
+        clearEnt();
         
-        for(Entity e : cornacopia.getWorld().getEntities()){
-            if(e.getType() == EntityType.DROPPED_ITEM || e.getType() == EntityType.CREEPER || e.getType() == EntityType.SKELETON || e.getType() == EntityType.SPIDER || e.getType() == EntityType.ENDERMAN || e.getType() == EntityType.ZOMBIE){
-                e.remove();
-            }
-        }
-
         // ----- WORLD RESETTING -----
-		
+
+        server.broadcastMessage(DARK_AQUA + "This plugin was created by Brenhien and NerdsWBNerds.");
+        server.broadcastMessage(DARK_AQUA + "Email richcoll97@gmail.com or tweet us (@NerdsWBNerds) with ideas or bugs you have found.");
+        
         load();
         
 		state = State.SET_UP;
@@ -197,17 +215,31 @@ public class ServerGames extends JavaPlugin implements Listener{
 		startTimer();
 	}
 	
+	public void clearEnt(){
+        for(Entity e : cornacopia.getWorld().getEntities()){
+            if(e.getType() == EntityType.DROPPED_ITEM || e.getType() == EntityType.CREEPER || e.getType() == EntityType.SKELETON || e.getType() == EntityType.SPIDER || e.getType() == EntityType.ENDERMAN || e.getType() == EntityType.ZOMBIE){
+                e.remove();
+            }
+        }
+	}
+	
 	public void startGame(){
 		state = State.IN_GAME;
 		
-		for(Player p : server.getOnlinePlayers()){
-			p.setHealth(20);
-			p.setFoodLevel(20);
-			this.clearItems(p);
+		for(Tribute t : ServerGames.tributes){
+			t.player.setHealth(20);
+			t.player.setFoodLevel(20);
+			clearItems(t.player);
 		}
 
+		bets.clear();
+		
 		clearAll();
 		load();
+		
+		for(Player p: cornacopia.getWorld().getPlayers()){
+			p.setCompassTarget(cornacopia);
+		}
 		
 		server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " Let the game begin!");
 
@@ -217,14 +249,17 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public void startDeath(){
-		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "The deathmatch will now start.");
 		server.broadcastMessage(GOLD + "[ServerGames] " + RED + "Do not run from the deathmatch.");
 		for(Tribute t: ServerGames.tributes){
-			t.player.teleport(t.start);
-			tell(t.player, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+			if(!t.player.isDead()){
+				t.player.teleport(toCenter(t.start));
+				tell(t.player, GOLD + "[ServerGames] " + GREEN + "You have made it to the deathmatch.");
+			}
 		}
+		
 		for(Spectator s: ServerGames.spectators){
-			s.player.teleport(ServerGames.cornacopia);
+			if(!s.player.isDead())
+				s.player.teleport(ServerGames.cornacopia);
 		}
 
 		clearAll();
@@ -239,6 +274,19 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public void startFinished(){
 		clearAll();
 		load();
+		
+		if(!bets.isEmpty()){
+			for(Bet b: bets){
+				if(b.better.isOnline()){
+					addScore(b.better, b.wager / 4);
+					addScore(b.tribute, b.wager / 8);
+				}
+				
+				bets.remove(b);
+			}
+		}
+		
+		bets.clear();
 		
 		state = State.DONE;
 		game = new Finished(this);
@@ -590,6 +638,9 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public boolean isSpectator(Player player){
+		if(spectators.isEmpty())
+			return false;
+		
 		if(getSpectator(player)!= null){
 			return true;
 		}
@@ -609,8 +660,91 @@ public class ServerGames extends JavaPlugin implements Listener{
 		
 		save();
 	}
-	
+
 	public int getScore(Player player){
+		if(!score.containsKey(player.getName())){
+			score.put(player.getName(), 100);
+			
+			int s = 100;
+			
+			if(hasBet(player)){
+				s -= getBet(player).wager;
+			}
+			
+			return s;
+		}else{
+			int s = score.get(player.getName());
+			
+			if(hasBet(player)){
+				s -= getBet(player).wager;
+			}
+			
+			return s;
+		}
+	}
+
+	public boolean hasBet(Player player){
+		for(Bet b: bets){
+			if(b.better == player)
+				return true;
+		}
+		
+		return false;
+	}
+
+	public boolean hasBet(String player){
+		if(bets==null)
+			return false;
+		
+		for(Bet b: bets){
+			if(b.better.getName().equalsIgnoreCase(player))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public Bet getBet(Player player){
+		for(Bet b: bets){
+			if(b.better == player)
+				return b;
+		}
+		
+		return null;
+	}
+	
+	public Bet getBetOn(Player player){
+		for(Bet b: bets){
+			if(b.tribute == player)
+				return b;
+		}
+		
+		return null;
+	}
+	
+	public boolean betOn(Player player){
+		if(bets==null){
+			return false;
+		}
+		
+		for(Bet b: bets){
+			if(b.tribute == player)
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public Bet getBet(String player){
+		for(Bet b: bets){
+			if(b.better.getName().equalsIgnoreCase(player))
+				return b;
+		}
+		
+		return null;
+	}
+
+	public int getFullScore(Player player){
 		if(!score.containsKey(player.getName())){
 			score.put(player.getName(), 100);
 			return 100;
@@ -624,6 +758,21 @@ public class ServerGames extends JavaPlugin implements Listener{
 			score.put(player, 100);
 			return 100;
 		}else{
+			int s = score.get(player);
+			
+			if(hasBet(player)){
+				s -= getBet(player).wager;
+			}
+			
+			return s;
+		}
+	}
+	
+	public int getFullScore(String player){
+		if(!score.containsKey(player)){
+			score.put(player, 100);
+			return 100;
+		}else{
 			return score.get(player);
 		}
 	}
@@ -632,12 +781,24 @@ public class ServerGames extends JavaPlugin implements Listener{
 		if(score.containsKey(player.getName()) && score.get(player.getName()) - take >= 0)
 			this.score.put(player.getName(), this.score.get(player.getName()) - take);
 		else
-			this.score.put(player.getName(), 0);
+			this.score.put(player.getName(), 100);
 		
 		save();
 	}
 	
 	public String topInGame(){
+		String most = "";
+		
+		for(Player p: server.getOnlinePlayers()){
+			if(getScore(p) > getScore(most)){
+				most = p.getName();
+			}
+		}
+		
+		return most;
+	}
+	
+	public String topInAll(){
 		String most = "";
 
 		for(Entry<String, Integer> info : score.entrySet()){
@@ -663,10 +824,12 @@ public class ServerGames extends JavaPlugin implements Listener{
 			theMax = hold.size();
 		
 		for(int i = 0; i < theMax; i++){
+			System.out.println("**" + i + "**");
 			for(Entry<String, Integer> info : hold.entrySet()){
+
+				System.out.println(info.getKey());
 				if(info.getValue() > getScore(most)){
 					most = info.getKey();
-					System.out.println(info.getKey());
 				}
 			}
 			
