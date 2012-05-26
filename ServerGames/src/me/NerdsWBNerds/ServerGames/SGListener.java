@@ -88,7 +88,7 @@ public class SGListener implements Listener {
 			tell(player, DARK_AQUA + "You are a tribute, you must try to survive, be the last one standing to win!.");
 		}
 		
-		e.setJoinMessage(AQUA + player.getName() + GREEN + " has joined the server.");
+		e.setJoinMessage(DARK_AQUA + player.getName() + YELLOW + " has joined the server.");
 	}
 
 	@EventHandler
@@ -321,7 +321,7 @@ public class SGListener implements Listener {
 		plugin.removeSpectator(player);
 		plugin.removeTribute(player);
 		
-		e.setQuitMessage(AQUA + player.getName() + GREEN + " has left the server.");
+		e.setQuitMessage(DARK_AQUA + player.getName() + YELLOW + " has left the server.");
 		e.getPlayer().remove();
 	}
 

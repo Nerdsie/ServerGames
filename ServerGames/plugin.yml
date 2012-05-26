@@ -14,6 +14,9 @@ commands:
    start:
       description: Start the game.
       usage: /start
+   sgstart:
+      description: Start the game.
+      usage: /sgstart
    end:
       description: Start finished.
       usage: /end

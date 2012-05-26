@@ -72,7 +72,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 		//cornacopia.getWorld().setAutoSave(false);
 		
 		CommandExec cmd = new CommandExec(this);		
-		this.getCommand("start").setExecutor(cmd);
+		this.getCommand("start").setExecutor(cmd);	
+		this.getCommand("sgstart").setExecutor(cmd);
 		this.getCommand("end").setExecutor(cmd);
 		this.getCommand("dm").setExecutor(cmd);
 		this.getCommand("edit").setExecutor(cmd);
@@ -324,9 +325,13 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public void tpAll(Location l){
 		for(Tribute t: tributes){
 			t.player.teleport(l);
+			t.player.setSprinting(false);
+			t.player.setSneaking(false);
 		}
 		for(Spectator s: spectators){
 			s.player.teleport(l);
+			s.player.setSprinting(false);
+			s.player.setSneaking(false);
 		}
 	}
 	
