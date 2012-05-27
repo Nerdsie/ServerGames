@@ -34,9 +34,9 @@ public class Lobby extends CurrentState{
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 seconds remaining.");
 		}if(time == 5){
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 5 seconds remaining.");
-		}if(time == 0){		
-			if(ServerGames.tributes != null && ServerGames.tributes.size()<5){
-				ServerGames.server.broadcastMessage(RED + "[ServerGames] There must be at least 5 tributes to play. Countdown resetting.");
+		}if(time <= 0){		
+			if(ServerGames.tributes != null && ServerGames.tributes.size() < ServerGames.min){
+				ServerGames.server.broadcastMessage(RED + "[ServerGames] There must be at least " + ServerGames.min + " tributes to play. Countdown resetting.");
 				time = 60 * 2 + 1;
 			}else{
 				plugin.startSetup();

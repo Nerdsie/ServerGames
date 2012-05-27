@@ -1,6 +1,9 @@
 package me.NerdsWBNerds.ServerGames.Timers;
 
 import static org.bukkit.ChatColor.*;
+
+import java.util.Random;
+
 import me.NerdsWBNerds.ServerGames.ServerGames;
 
 @SuppressWarnings("unused")
@@ -13,7 +16,7 @@ public class Finished extends CurrentState{
 	}
 	
 	public void run(){
-		if(time==0){
+		if(time<=0){
 			plugin.startLobby();
 		}
 		

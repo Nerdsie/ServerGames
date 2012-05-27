@@ -26,7 +26,7 @@ public class Game extends CurrentState{
 			plugin.startDeath();
 		}
 		
-		long wTime = ServerGames.cornacopia.getWorld().getTime();
+		long wTime = ServerGames.getCorn().getWorld().getTime();
 		if(wTime >= 13200 && wTime < 13220){
 			ServerGames.loaded.clear();
 			Chests.resetChests();

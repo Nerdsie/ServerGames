@@ -1,10 +1,6 @@
 package me.NerdsWBNerds.ServerGames;
 
-import static org.bukkit.ChatColor.AQUA;
-import static org.bukkit.ChatColor.GOLD;
-import static org.bukkit.ChatColor.GREEN;
-import static org.bukkit.ChatColor.RED;
-
+import static org.bukkit.ChatColor.*;
 import java.text.DecimalFormat;
 
 import me.NerdsWBNerds.ServerGames.Objects.Bet;
@@ -23,6 +19,11 @@ public class CommandExec implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
 		if(sender instanceof Player){
+
+			//////////////// -------------------------------------------- /////////////////
+			//////////////// ------------ PLAYER COMMANDS --------------- /////////////////
+			//////////////// -------------------------------------------- /////////////////
+			
 			Player player = (Player) sender;
 
 			//////////////// --------- BETS (List all bets) --------- //////////////////
@@ -93,8 +94,9 @@ public class CommandExec implements CommandExecutor {
 					return true;
 				}
 				
-				if(ServerGames.tubes.size() == 0){
+				if(ServerGames.getTubes()==null){
 					tell(player, RED + "[ServerGames] You must have at least 1 spawning point.  Use /add to set a spawn point.");
+					System.out.println("TRYING TO LOAD THE MAP " + ServerGames.worlds.get(ServerGames.current));
 					return true;
 				}
 				
@@ -131,25 +133,15 @@ public class CommandExec implements CommandExecutor {
 			}
 
 			//////////////// --------- INFO (Get lobby info)  --------- //////////////////
-			if(cmd.getName().equalsIgnoreCase("info")){
-				DecimalFormat rdec = new DecimalFormat("#");  
-				
-				tell(player, GOLD + "**Current Server Game Info**");
-				tell(player, GREEN + "There is " + AQUA + rdec.format(ServerGames.game.time / 60) + GREEN + " minute(s) " + AQUA + (ServerGames.game.time % 60) + GREEN + " second(s) remaining.");
-				tell(player, GREEN + "There are " + AQUA + ServerGames.tributes.size() + "/" + ServerGames.server.getOnlinePlayers().length + GREEN + " tribute(s) remaining.");
-				tell(player, GREEN + "The highest ranked player in this game is " + AQUA + plugin.topInGame() + GREEN + " with " + AQUA + plugin.getScore(plugin.topInGame()) + GREEN + " points.");
-				return true;
-			}
-
-			//////////////// --------- INFO (Get lobby info)  --------- //////////////////
 			if(cmd.getName().equalsIgnoreCase("sg")){
 				try{
 					DecimalFormat rdec = new DecimalFormat("#");  
 					
-					tell(player, GOLD + "**Current Server Game Info**");
+					tell(player, GOLD + "**Current Server Game Info** " + DARK_AQUA + "Map(" + ServerGames.worlds.get(ServerGames.current) + ")");					
+					tell(player, YELLOW + "Plugin by NerdsWBNerds (@NerdsWBNerds) and Brenhein.");
 					tell(player, GREEN + "There is " + AQUA + rdec.format(ServerGames.game.time / 60) + GREEN + " minute(s) " + AQUA + (ServerGames.game.time % 60) + GREEN + " second(s) remaining.");
 					tell(player, GREEN + "There are " + AQUA + ServerGames.tributes.size() + "/" + ServerGames.server.getOnlinePlayers().length + GREEN + " tribute(s) remaining.");
-					tell(player, GREEN + "The highest ranked player in this game is " + AQUA + plugin.topInGame() + GREEN + " with " + AQUA + plugin.getScore(plugin.topInGame()) + GREEN + " points.");
+					tell(player, GREEN + "Highest ranked player here is " + AQUA + plugin.topInGame() + GREEN + " with " + AQUA + plugin.getScore(plugin.topInGame()) + GREEN + " points.");
 				}catch(Exception e){}
 					
 				return true;
@@ -175,7 +167,7 @@ public class CommandExec implements CommandExecutor {
 					return true;
 				}
 				
-				ServerGames.cornacopia = toCenter(player.getLocation());
+				ServerGames.cornacopia.put(player.getWorld().getName(), toCenter(player.getLocation()));
 				tell(player, GOLD + "[ServerGames]" + GREEN + " Cornacoptia set at your location.");
 				plugin.save();
 				return true;
@@ -244,7 +236,45 @@ public class CommandExec implements CommandExecutor {
 					return true;
 				}
 			}
+
+			//////////////// --------- SETMIN (Set minimum amount of people to start game.) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("setmin")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerGames] You do not have permission to do this.");
+					return true;
+				}
+
+				try{
+					int newM = Integer.parseInt(args[0]);
+					ServerGames.min=newM;
+					tell(player, GOLD + "[ServerGames] " + GREEN + "Games must now have "+ AQUA + newM + GREEN + " people to start.");
+					return true;
+				}catch(Exception e){
+					tell(player, RED + "[ServerGames] Error changing minimum, did you enter a number?");
+					return true;
+				}
+			}
 		}else{
+			//////////////// -------------------------------------------- /////////////////
+			//////////////// ----------- CONSOLE COMMANDS --------------- /////////////////
+			//////////////// -------------------------------------------- /////////////////
+			
+
+			//////////////// --------- SETMIN (Set minimum amount of people to start game.) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("setmin")){
+				try{
+					int newM = Integer.parseInt(args[0]);
+					ServerGames.min=newM;
+					System.out.println("[ServerGames] " + "Games must now have " + newM + " people to start.");
+					plugin.getConfig().set("min-to-start", newM);
+					plugin.saveConfig();
+					return true;
+				}catch(Exception e){
+					System.out.println("[ServerGames] Error changing minimum, did you enter a number?");
+					return true;
+				}
+			}
+			
 			//////////////// --------- INFO (Get lobby info)  --------- //////////////////
 			if(cmd.getName().equalsIgnoreCase("sg")){
 				try{

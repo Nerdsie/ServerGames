@@ -31,7 +31,7 @@ public class Setup extends CurrentState implements Runnable{
 			if(time <= 10 && time > 0){
 				ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + GREEN + time +" seconds remaining.");
 			}
-			if(time == 0){
+			if(time <= 0){
 				plugin.startGame();
 			}
 		}else{

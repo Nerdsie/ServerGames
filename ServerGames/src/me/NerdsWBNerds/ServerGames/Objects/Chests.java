@@ -26,30 +26,34 @@ public class Chests {
     		}
     	}
     	
-    	for(Chunk c : ServerGames.cornacopia.getWorld().getLoadedChunks()){
-    		if(!ServerGames.loaded.contains(c)){
-	    		BlockState[] blockState = c.getTileEntities();
-	    		for(BlockState tileEntity : blockState){
-	    			if(tileEntity instanceof Chest){    	
-	    				ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>();
-	    				Chest chestBlock = (Chest)tileEntity;
-	    				Random rnd = new Random();
-	    				
-	    				int max = 27;
-	    				    	
-	    				if (((Chest)chestBlock).getInventory() instanceof DoubleChestInventory){
-	    					max = 27 * 2;
-	    				}
-	    				
-	    				for(int i = 0; i < max; i++){
-	    					arrayList.add(new ItemStack(items.get(rnd.nextInt(items.size())), 1));
-	    				}
-	    				setChest(chestBlock, arrayList);
-	    			}
+    	for(String s: ServerGames.worlds){
+    		World w = ServerGames.server.getWorld(s);
+    		
+	    	for(Chunk c : w.getLoadedChunks()){
+	    		if(!ServerGames.loaded.contains(c)){
+		    		BlockState[] blockState = c.getTileEntities();
+		    		for(BlockState tileEntity : blockState){
+		    			if(tileEntity instanceof Chest){    	
+		    				ArrayList<ItemStack> arrayList = new ArrayList<ItemStack>();
+		    				Chest chestBlock = (Chest)tileEntity;
+		    				Random rnd = new Random();
+		    				
+		    				int max = 27;
+		    				    	
+		    				if (((Chest)chestBlock).getInventory() instanceof DoubleChestInventory){
+		    					max = 27 * 2;
+		    				}
+		    				
+		    				for(int i = 0; i < max; i++){
+		    					arrayList.add(new ItemStack(items.get(rnd.nextInt(items.size())), 1));
+		    				}
+		    				setChest(chestBlock, arrayList);
+		    			}
+		    		}
+	        		ServerGames.loaded.add(c);
 	    		}
-        		ServerGames.loaded.add(c);
-    		}
-        }
+	        }
+    	}
     }
     
     public static void resetChests(Chunk c){

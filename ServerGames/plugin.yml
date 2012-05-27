@@ -38,9 +38,6 @@ commands:
    see:
       description: Spectate someone.
       usage: /see <player>
-   info:
-      description: View current lobby info.
-      usage: /info
    sg:
       description: View current lobby info.
       usage: /sg
@@ -53,3 +50,6 @@ commands:
    force:
       description: Force ending of game.
       usage: /force
+   setmin:
+      description: Set minimum amount of people to start game.
+      usage: /setmin

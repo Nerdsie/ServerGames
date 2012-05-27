@@ -78,7 +78,7 @@ public class SGListener implements Listener {
 		if(ServerGames.inGame() || ServerGames.inDeath() || ServerGames.inDone() || ServerGames.inSetup()){
 			plugin.removeTribute(player);
 			ServerGames.spectators.add(new Spectator(player));		
-			player.setCompassTarget(ServerGames.cornacopia);
+			player.setCompassTarget(ServerGames.getCorn());
 			player.setGameMode(GameMode.CREATIVE);
 			
 			tell(player, DARK_AQUA + "You are a spectator, others cannot see yoy, click to teleport to different people. You can also use /bet");
@@ -97,8 +97,12 @@ public class SGListener implements Listener {
 		Block block = e.getBlock();
 		
 		if(player.isOp() && editing.contains(player)){
-			ServerGames.tubes.add(toCenter(block.getLocation()));
-			tell(player, GOLD + "[ServerGames] " + GREEN + "Tube location added.");
+			if(ServerGames.tubes.get(player.getWorld().getName())==null){
+				ServerGames.tubes.put(player.getWorld().getName(), new ArrayList<Location>());
+			}
+			
+			ServerGames.tubes.get(player.getWorld().getName()).add(e.getBlock().getLocation());
+			tell(player, GOLD + "[ServerGames] " + GREEN + "Tube #" + ServerGames.tubes.get(player.getWorld().getName()).size() + " location added.");
 			e.setCancelled(true);
 			
 			plugin.save();
@@ -141,7 +145,7 @@ public class SGListener implements Listener {
 		if(plugin.isTribute(player)){
 			e.setDeathMessage(GOLD + "[ServerGames] " + AQUA + player.getName() + GREEN + " has died.");
 
-			if(ServerGames.inGame() || ServerGames.inLobby()){
+			if(ServerGames.inGame()){
 				ServerGames.game.time-=30;
 			}
 		}else{
@@ -183,7 +187,7 @@ public class SGListener implements Listener {
 	
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent e){
-		e.setRespawnLocation(toCenter(ServerGames.cornacopia));
+		e.setRespawnLocation(toCenter(ServerGames.getCorn()));
 		
 		if(ServerGames.inLobby() || ServerGames.inNothing()){
 			e.setRespawnLocation(toCenter(ServerGames.waiting));
@@ -219,25 +223,21 @@ public class SGListener implements Listener {
 			e.setCancelled(true);
 			
 			if(player.isSneaking()){
-				player.teleport(ServerGames.cornacopia);		
+				player.teleport(ServerGames.getCorn());		
 				tell(player, GOLD + "[ServerGames] " + GREEN + "You are now at cornacopia.");
 			}else{
 				if(!spec.containsKey(player)){
-					Player toSpec = ServerGames.tributes.get(0).player;
-					
-					spec.put(player, 1);
-					player.teleport(toSpec);
-					tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
-				}else{
-					if(spec.get(player) >= ServerGames.tributes.size())
-						spec.put(player, 0);
-	
-					Player toSpec = ServerGames.tributes.get(spec.get(player)).player;
-					
-					tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
-					player.teleport(toSpec);
-					spec.put(player, spec.get(player) + 1);
+					spec.put(player, 0);
 				}
+				
+				if(spec.get(player) >= ServerGames.tributes.size())
+					spec.put(player, 0);
+
+				Player toSpec = ServerGames.tributes.get(spec.get(player)).player;
+				
+				tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
+				player.teleport(toSpec);
+				spec.put(player, spec.get(player) + 1);
 			}
 		}
 		
@@ -340,7 +340,7 @@ public class SGListener implements Listener {
 		}
 		
 		if(ServerGames.inDeath() && plugin.isTribute(e.getPlayer())){
-			if(y.distance(ServerGames.cornacopia) > 40 && x.distance(ServerGames.cornacopia) <= 40){
+			if(y.distance(ServerGames.getCorn()) > 40 && x.distance(ServerGames.getCorn()) <= 40){
 				ServerGames.server.broadcastMessage(GOLD + "[ServerGames] " + AQUA + e.getPlayer().getName() + GREEN + " tried to run from the fight!");
 				e.getPlayer().setHealth(0);
 			}

@@ -9,7 +9,7 @@ public class Deathmatch extends CurrentState{
 	public Deathmatch(ServerGames p){
 		plugin = p;
 		time = 60 * 4;
-		ServerGames.cornacopia.getWorld().setTime(0);
+		ServerGames.getCorn().getWorld().setTime(0);
 		
 		plugin.clearEnt();
 	}
@@ -19,7 +19,7 @@ public class Deathmatch extends CurrentState{
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 2 minutes remaining.");
 		}if(time==1 * 60){
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 1 minute remaining.");
-		}if(time==0){
+		}if(time<=0){
 			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " This Hunger Games has no victor.");
 			plugin.startLobby();
 		}

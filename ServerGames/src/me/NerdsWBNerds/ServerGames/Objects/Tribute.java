@@ -16,13 +16,13 @@ public class Tribute {
 	}
 	
 	public void die(){
-		Location strike = new Location(ServerGames.cornacopia.getWorld(), ServerGames.cornacopia.getBlockX(), ServerGames.cornacopia.getBlockY() + 20, ServerGames.cornacopia.getZ());
-		ServerGames.cornacopia.getWorld().strikeLightning(strike);
+		Location strike = new Location(ServerGames.getCorn().getWorld(), ServerGames.getCorn().getBlockX(), ServerGames.getCorn().getBlockY() + 20, ServerGames.getCorn().getZ());
+		ServerGames.getCorn().getWorld().strikeLightning(strike);
 		ServerGames.hidePlayer(player);
 	}
 	
 	public void leave(){
-		Location strike = new Location(ServerGames.cornacopia.getWorld(), ServerGames.cornacopia.getBlockX(), ServerGames.cornacopia.getBlockY() + 20, ServerGames.cornacopia.getZ());
-		ServerGames.cornacopia.getWorld().strikeLightning(strike);
+		Location strike = new Location(ServerGames.getCorn().getWorld(), ServerGames.getCorn().getBlockX(), ServerGames.getCorn().getBlockY() + 20, ServerGames.getCorn().getZ());
+		ServerGames.getCorn().getWorld().strikeLightning(strike);
 	}
 }
