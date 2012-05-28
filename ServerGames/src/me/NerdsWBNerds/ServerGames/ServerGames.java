@@ -41,7 +41,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	public static Logger log;
 
 	public static int max = 24, min = 1;
-	public static int current = 0;
+	public static String current = "";
 	public static State state = null;
 	public static CurrentState game = null;
 	public static HashMap<String, Integer> score = new HashMap<String, Integer>();
@@ -66,6 +66,8 @@ public class ServerGames extends JavaPlugin implements Listener{
 			getConfig().set("worlds", "");
 			saveConfig();
 		}
+		
+		current = worlds.get(0);
 		
 		if(getConfig().contains("min-to-start")){
 			int mts = getConfig().getInt("min-to-start");
@@ -109,9 +111,20 @@ public class ServerGames extends JavaPlugin implements Listener{
 		this.getCommand("see").setExecutor(cmd);
 		this.getCommand("spec").setExecutor(cmd);
 		this.getCommand("setmin").setExecutor(cmd);
+		this.getCommand("addworld").setExecutor(cmd);
+		this.getCommand("delworld").setExecutor(cmd);
 	}
 	
 	public void onDisable(){
+		if(worlds!=null && !worlds.isEmpty()){
+			String s = "";
+			for(String w: worlds){
+				s+=w + " ";
+			}
+			
+			getConfig().set("worlds", s);
+		}
+		
 		clearAll();
 
 		save();
@@ -159,7 +172,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 		this.clearEnt();
 		load();
 		tpAll(waiting);
-		ServerGames.current = new Random().nextInt(ServerGames.worlds.size());
+		ServerGames.current = worlds.get(new Random().nextInt(ServerGames.worlds.size()));
 		
 		for(Player p: server.getOnlinePlayers()){
 			showAllFor(p);
@@ -256,6 +269,9 @@ public class ServerGames extends JavaPlugin implements Listener{
 			t.player.setHealth(20);
 			t.player.setFoodLevel(20);
 			clearItems(t.player);
+			if(!t.player.isOnline()){
+				ServerGames.tributes.remove(t);
+			}
 		}
 
 		loaded.clear();
@@ -300,19 +316,18 @@ public class ServerGames extends JavaPlugin implements Listener{
 		startTimer();
 	}
 	
-	public void startFinished(){
-		clearAll();
-		load();
-		
+	public void startFinished(){		
 		if(bets!=null && !bets.isEmpty()){
 			for(Bet b: bets){
-				addScore(b.better, b.wager / 4);
-				addScore(b.tribute, b.wager / 4);
+				addScore(b.better.getName(), b.wager / 4);
+				addScore(b.tribute.getName(), b.wager / 4);
 				
 				bets.remove(b);
 			}
 		}
-		
+
+		clearAll();
+		load();
 		bets.clear();
 		
 		state = State.DONE;
@@ -554,7 +569,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 				String[] split = ((String)result).split(",");
 				Location c = new Location(server.getWorld(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
 				
-				ServerGames.cornacopia.put(worlds.get(current), c);
+				ServerGames.cornacopia.put(s, c);
 			}catch(Exception e){
 				//e.printStackTrace();
 			}
@@ -668,6 +683,15 @@ public class ServerGames extends JavaPlugin implements Listener{
 			ServerGames.score.put(player.getName(), ServerGames.score.get(player.getName()) + add);
 		else
 			ServerGames.score.put(player.getName(), add);
+		
+		save();
+	}
+	
+	public void addScore(String player, int add){
+		if(score.containsKey(player))
+			ServerGames.score.put(player, ServerGames.score.get(player) + add);
+		else
+			ServerGames.score.put(player, add);
 		
 		save();
 	}
@@ -852,10 +876,10 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 
 	public static Location getCorn(){
-		return cornacopia.get(worlds.get(current));
+		return cornacopia.get((current));
 	}
 
 	public static ArrayList<Location> getTubes(){
-		return tubes.get(worlds.get(current));
+		return tubes.get(current);
 	}
 }

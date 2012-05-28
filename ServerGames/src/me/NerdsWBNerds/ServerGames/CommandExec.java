@@ -90,23 +90,27 @@ public class CommandExec implements CommandExecutor {
 				plugin.load();
 
 				if(!ServerGames.inNothing()){
-					tell(player, RED + "[ServerGames] You cannot start another game while a game is in progress.  Use /end to stop current game.");
+					tell(player, RED + "[ServerGames] You cannot start another game while a game is in progress.  Use /force to stop current game.");
 					return true;
 				}
 				
 				if(ServerGames.getTubes()==null){
-					tell(player, RED + "[ServerGames] You must have at least 1 spawning point.  Use /add to set a spawn point.");
-					System.out.println("TRYING TO LOAD THE MAP " + ServerGames.worlds.get(ServerGames.current));
+					tell(player, RED + "[ServerGames] You must have at least 1 spawning point.  Use /edit to toggle editing, then break a block to add it.");
 					return true;
 				}
 				
 				if(ServerGames.cornacopia==null){
-					tell(player, RED + "[ServerGames] You must have a cornacopia. Use /setc to set a spawn point.");
+					tell(player, RED + "[ServerGames] You must have a cornacopia. Use /setcorn to set a spawn point.");
 					return true;
 				}
 				
 				if(ServerGames.waiting==null){
-					tell(player, RED + "[ServerGames] You must have a waiting spawn. Use /setw to set a spawn point.");
+					tell(player, RED + "[ServerGames] You must have a waiting spawn. Use /setwait to set a spawn point.");
+					return true;
+				}
+				
+				if(ServerGames.worlds==null || ServerGames.worlds.isEmpty()){
+					tell(player, RED + "[ServerGames] You must have a hunger games world. Use /addworld <world_name> to set a spawn point.");
 					return true;
 				}
 					
@@ -137,7 +141,7 @@ public class CommandExec implements CommandExecutor {
 				try{
 					DecimalFormat rdec = new DecimalFormat("#");  
 					
-					tell(player, GOLD + "**Current Server Game Info** " + DARK_AQUA + "Map(" + ServerGames.worlds.get(ServerGames.current) + ")");					
+					tell(player, GOLD + "**Current Server Game Info** " + DARK_AQUA + "Map(" + ServerGames.current + ")");					
 					tell(player, YELLOW + "Plugin by NerdsWBNerds (@NerdsWBNerds) and Brenhein.");
 					tell(player, GREEN + "There is " + AQUA + rdec.format(ServerGames.game.time / 60) + GREEN + " minute(s) " + AQUA + (ServerGames.game.time % 60) + GREEN + " second(s) remaining.");
 					tell(player, GREEN + "There are " + AQUA + ServerGames.tributes.size() + "/" + ServerGames.server.getOnlinePlayers().length + GREEN + " tribute(s) remaining.");
@@ -222,7 +226,7 @@ public class CommandExec implements CommandExecutor {
 				}
 				
 				if(!ServerGames.inNothing()){
-					tell(player, RED + "[ServerGames] You cannot edit spawns while game is in progress.  Use /end to stop current game.");
+					tell(player, RED + "[ServerGames] You cannot edit spawns while game is in progress.  Use /force to stop current game.");
 					return true;
 				}
 				
@@ -235,6 +239,56 @@ public class CommandExec implements CommandExecutor {
 					plugin.Listener.editing.add(player);
 					return true;
 				}
+			}
+
+			//////////////// --------- ADDWORLD (Add world to rotation) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("addworld")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerGames] You do not have permission to do this.");
+					return true;
+				}
+				
+				if(!ServerGames.inNothing()){
+					tell(player, RED + "[ServerGames] Cannot edit worlds while game is active, use /force to stop game.");
+					return true;
+				}
+				
+				String w = ServerGames.server.getWorld(args[0]).getName();
+				
+				if(!ServerGames.worlds.contains(w)){
+					ServerGames.worlds.add(w);
+				}else{
+					tell(player, RED + "[ServerGames] World already in rotation.");
+					return true;
+				}
+
+				tell(player, GOLD + "[ServerGames] " + GREEN + "The world "+ AQUA + w + GREEN + " has been added.");
+				return true;
+			}
+
+			//////////////// --------- DELWORLD (Delete world from rotation) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("delworld")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerGames] You do not have permission to do this.");
+					return true;
+				}
+				
+				if(!ServerGames.inNothing()){
+					tell(player, RED + "[ServerGames] Cannot edit worlds while game is active, use /force to stop game.");
+					return true;
+				}
+				
+				String w = ServerGames.server.getWorld(args[0]).getName();
+				
+				if(!ServerGames.worlds.contains(w)){
+					ServerGames.worlds.remove(w);
+				}else{
+					tell(player, RED + "[ServerGames] World already isn't in rotation.");
+					return true;
+				}
+
+				tell(player, GOLD + "[ServerGames] " + GREEN + "The world "+ AQUA + w + GREEN + " has been deleted.");
+				return true;
 			}
 
 			//////////////// --------- SETMIN (Set minimum amount of people to start game.) --------- //////////////////
@@ -327,17 +381,22 @@ public class CommandExec implements CommandExecutor {
 				}
 				
 				if(ServerGames.tubes.size() == 0){
-					System.out.println("[ServerGames] You must have at least 1 spawning point.  Use /add to set a spawn point.");
+					System.out.println("[ServerGames] You must have at least 1 spawning point.  Use /edit to toggle editing, then break a block to add it.");
 					return true;
 				}
 				
 				if(ServerGames.cornacopia==null){
-					System.out.println("[ServerGames] You must have a cornacopia. Use /setc to set a spawn point.");
+					System.out.println("[ServerGames] You must have a cornacopia. Use /setcorn to set a spawn point.");
 					return true;
 				}
 				
 				if(ServerGames.waiting==null){
-					System.out.println("[ServerGames] You must have a waiting spawn. Use /setw to set a spawn point.");
+					System.out.println("[ServerGames] You must have a waiting spawn. Use /setwait to set a spawn point.");
+					return true;
+				}
+				
+				if(ServerGames.worlds==null || ServerGames.worlds.isEmpty()){
+					System.out.println("[ServerGames] You must have a hunger games world. Use /addworld <world_name> to set a spawn point.");
 					return true;
 				}
 					
