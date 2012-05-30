@@ -113,6 +113,9 @@ public class ServerGames extends JavaPlugin implements Listener{
 		this.getCommand("setmin").setExecutor(cmd);
 		this.getCommand("addworld").setExecutor(cmd);
 		this.getCommand("delworld").setExecutor(cmd);
+		this.getCommand("map").setExecutor(cmd);
+		this.getCommand("see").setExecutor(cmd);
+		this.getCommand("hide").setExecutor(cmd);
 	}
 	
 	public void onDisable(){
@@ -316,13 +319,21 @@ public class ServerGames extends JavaPlugin implements Listener{
 		startTimer();
 	}
 	
-	public void startFinished(){		
-		if(bets!=null && !bets.isEmpty()){
-			for(Bet b: bets){
-				addScore(b.better.getName(), b.wager / 4);
-				addScore(b.tribute.getName(), b.wager / 4);
-				
-				bets.remove(b);
+	public void startFinished(){	
+		if(bets!=null && !bets.isEmpty() && bets.size()>0){
+			for(int i = 0; i < bets.size(); i++){
+				try{
+					Bet b = bets.get(i);
+					
+					if(isTribute(server.getPlayer(b.tribute))){
+						addScore(b.better, b.wager / 4);
+						addScore(b.tribute, b.wager / 4);
+					}else{
+						subtractScore(b.better, b.wager);
+					}
+					
+					bets.remove(b);
+				}catch(Exception e){e.printStackTrace();}
 			}
 		}
 
@@ -406,7 +417,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	}
 	
 	public Location toCenter(Location l){
-		return new Location(l.getWorld(), l.getBlockX() + .5, l.getBlockY(), l.getBlockZ() + .5);
+		return new Location(l.getWorld(), l.getBlockX() + .5, l.getBlockY() + 1, l.getBlockZ() + .5);
 	}
 	
 	public void removeTribute(Player p){
@@ -720,7 +731,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 
 	public boolean hasBet(Player player){
 		for(Bet b: bets){
-			if(b.better == player)
+			if(b.better.equalsIgnoreCase(player.getName()))
 				return true;
 		}
 		
@@ -732,7 +743,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 			return false;
 		
 		for(Bet b: bets){
-			if(b.better.getName().equalsIgnoreCase(player))
+			if(b.better.equalsIgnoreCase(player))
 				return true;
 		}
 		
@@ -741,7 +752,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public Bet getBet(Player player){
 		for(Bet b: bets){
-			if(b.better == player)
+			if(b.better.equalsIgnoreCase(player.getName()))
 				return b;
 		}
 		
@@ -750,7 +761,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public Bet getBetOn(Player player){
 		for(Bet b: bets){
-			if(b.tribute == player)
+			if(b.tribute.equalsIgnoreCase(player.getName()))
 				return b;
 		}
 		
@@ -763,7 +774,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 		}
 		
 		for(Bet b: bets){
-			if(b.tribute == player)
+			if(b.tribute.equalsIgnoreCase(player.getName()))
 				return true;
 		}
 		
@@ -772,7 +783,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public Bet getBet(String player){
 		for(Bet b: bets){
-			if(b.better.getName().equalsIgnoreCase(player))
+			if(b.better.equalsIgnoreCase(player))
 				return b;
 		}
 		
@@ -811,12 +822,21 @@ public class ServerGames extends JavaPlugin implements Listener{
 			return score.get(player);
 		}
 	}
-	
+
 	public void subtractScore(Player player, int take){
 		if(score.containsKey(player.getName()) && score.get(player.getName()) - take >= 0)
 			ServerGames.score.put(player.getName(), ServerGames.score.get(player.getName()) - take);
 		else
 			ServerGames.score.put(player.getName(), 100);
+		
+		save();
+	}
+	
+	public void subtractScore(String player, int take){
+		if(score.containsKey(player) && score.get(player) - take >= 0)
+			ServerGames.score.put(player, ServerGames.score.get(player) - take);
+		else
+			ServerGames.score.put(player, 100);
 		
 		save();
 	}

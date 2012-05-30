@@ -3,12 +3,12 @@ package me.NerdsWBNerds.ServerGames.Objects;
 import org.bukkit.entity.Player;
 
 public class Bet {
-	public Player better, tribute;
+	public String better, tribute;
 	public int wager;
 	
 	public Bet(Player bet, Player trib, int wage){
-		better = bet;
-		tribute = trib;
+		better = bet.getName();
+		tribute = trib.getName();
 		wager = wage;
 	}
 }

@@ -13,7 +13,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -151,25 +150,41 @@ public class SGListener implements Listener {
 			if(ServerGames.inGame()){
 				ServerGames.game.time-=30;
 			}
+			
+			if(player.getKiller() instanceof Player && (ServerGames.inDeath()|| ServerGames.inGame() || ServerGames.inSetup())){
+		        Player attacker = (Player) player.getKiller();
+
+				if(plugin.isTribute(attacker)){
+					int p = (int) 2 * plugin.getScore(player) / 100;
+					
+					if(p<5)
+						p = 5;
+					
+					tell(attacker, GOLD + "[ServerGames] " + GREEN + "You are awarded " + AQUA + p + GREEN + " points for killing " + AQUA + player.getName());
+					tell(player, GOLD + "[ServerGames] " + GREEN + "You have lost " + AQUA + (p + 10) + GREEN + " points for being killed by " + AQUA + attacker.getName());
+					
+					plugin.addScore(attacker, p);
+					plugin.subtractScore(player, p + 10);
+				}
+			}
 		}else{
 			e.setDeathMessage(null);
 			e.getDrops().clear();
 		}
 		
 		if((ServerGames.inDeath()|| ServerGames.inGame() || ServerGames.inSetup()) && plugin.isTribute(player)){
+			int p = (int) 2 * plugin.getScore(player) / 100;
+			
+			if(p<5)
+				p = 5;
+
+			plugin.subtractScore(player, p + 10);
+			
 			plugin.getTribute(player).die();
 			plugin.removeTribute(player);
 			ServerGames.spectators.add(new Spectator(player));
 			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
-			plugin.subtractScore(player, (int)  2 * plugin.getScore(player) / 100);
-			
-			if(plugin.betOn(player)){
-				try{
-					plugin.subtractScore(plugin.getBetOn(player).better, plugin.getBetOn(player).wager);
-					ServerGames.bets.remove(plugin.getBetOn(player));
-				}catch(Exception ee){}
-			}
 			
 			if(ServerGames.tributes.size()==2 && ServerGames.inGame()){		
 				plugin.startDeath();
@@ -291,13 +306,6 @@ public class SGListener implements Listener {
 					
 					return;
 				}
-				
-				if(plugin.isTribute(hit) && hurt.getHealth() - e.getDamage() <= 0){
-					System.out.println(GOLD + "[ServerGames] " + GREEN + "You are awarded " + AQUA + ((int) 2 * plugin.getScore(hurt) / 100) + GREEN + " points for killing " + AQUA + hurt.getName());
-					System.out.println(GOLD + "[ServerGames] " + GREEN + "You have lost " + AQUA + ((int) 2 * plugin.getScore(hurt) / 100 + 10) + GREEN + " points for being killed by " + AQUA + hit.getName());
-					
-					plugin.addScore(hit, (int)  2 * plugin.getScore(hurt) / 100);
-				}
 			}
 		}
 	}
@@ -308,30 +316,15 @@ public class SGListener implements Listener {
 		
 		ServerGames.showPlayer(player);
 		ServerGames.showAllFor(player);
+
+		if(plugin.isTribute(player)){
+			if(ServerGames.inGame()){
+				ServerGames.game.time-=30;
+			}
+		}
 		
-		if((ServerGames.inDeath() || ServerGames.inGame() || ServerGames.inSetup()) && plugin.isTribute(player)){
-			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
-			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
-			
-			if(plugin.betOn(player)){
-				try{
-					plugin.subtractScore(plugin.getBetOn(player).better, plugin.getBetOn(player).wager);
-					ServerGames.bets.remove(plugin.getBetOn(player));
-				}catch(Exception ee){}
-			}
-			
-			if(ServerGames.tributes.size()==2 && ServerGames.inGame()){				
-				say(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
-
-				plugin.startDeath();
-			}
-			
-			if(ServerGames.tributes.size()==1){
-				say(GOLD + "[ServerGames] " + AQUA + ServerGames.tributes.get(0).player.getName() + GREEN + " has won the Server Games!");
-				plugin.startFinished();
-			}
-
-			plugin.subtractScore(player, (int)  2 * plugin.getScore(player) / 100);
+		if((ServerGames.inDeath()|| ServerGames.inGame() || ServerGames.inSetup()) && plugin.isTribute(player)){
+			player.setHealth(0);
 		}
 		
 		plugin.removeSpectator(player);
@@ -347,30 +340,15 @@ public class SGListener implements Listener {
 		
 		ServerGames.showPlayer(player);
 		ServerGames.showAllFor(player);
+
+		if(plugin.isTribute(player)){
+			if(ServerGames.inGame()){
+				ServerGames.game.time-=30;
+			}
+		}
 		
-		if((ServerGames.inDeath() || ServerGames.inGame() || ServerGames.inSetup()) && plugin.isTribute(player)){
-			say(GOLD + "[ServerGames]" + GREEN + " A cannon could be heard in the distance.");
-			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
-			
-			if(plugin.betOn(player)){
-				try{
-					plugin.subtractScore(plugin.getBetOn(player).better, plugin.getBetOn(player).wager);
-					ServerGames.bets.remove(plugin.getBetOn(player));
-				}catch(Exception ee){}
-			}
-			
-			if(ServerGames.tributes.size()==2 && ServerGames.inGame()){				
-				say(GOLD + "[ServerGames]" + GREEN + " The final deathmatch will now begin");
-
-				plugin.startDeath();
-			}
-			
-			if(ServerGames.tributes.size()==1){
-				say(GOLD + "[ServerGames] " + AQUA + ServerGames.tributes.get(0).player.getName() + GREEN + " has won the Server Games!");
-				plugin.startFinished();
-			}
-
-			plugin.subtractScore(player, (int)  2 * plugin.getScore(player) / 100);
+		if((ServerGames.inDeath()|| ServerGames.inGame() || ServerGames.inSetup()) && plugin.isTribute(player)){
+			player.setHealth(0);
 		}
 		
 		plugin.removeSpectator(player);
@@ -430,6 +408,6 @@ public class SGListener implements Listener {
 	}
 
 	public Location toCenter(Location l){
-		return new Location(l.getWorld(), l.getBlockX() + .5, l.getBlockY(), l.getBlockZ() + .5);
+		return new Location(l.getWorld(), l.getBlockX() + .5, l.getBlockY() + 1, l.getBlockZ() + .5);
 	}
 }

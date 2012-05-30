@@ -56,3 +56,15 @@ commands:
    map:
       description: Choose the map you will play next.
       usage: /map
+   addworld:
+      description: Add world to rotation.
+      usage: /addworld
+   delworld:
+      description: Delete world from roation.
+      usage: /delworld
+   see:
+      description: See a spectator.
+      usage: /see <player>
+   hide:
+      description: Hide player.
+      usage: /hide <player>

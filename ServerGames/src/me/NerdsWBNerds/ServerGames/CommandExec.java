@@ -30,7 +30,7 @@ public class CommandExec implements CommandExecutor {
 			if(cmd.getName().equalsIgnoreCase("bets")){
 		        tell(player, GOLD + "[ServerGames] " + GREEN + "CURRENT STANDINGS:");
 		        for(Bet b: ServerGames.bets){
-		        	tell(player, GOLD + "[ServerGames] " + GREEN + "* " + b.better.getName() + " has bet on " + b.tribute.getName());
+		        	tell(player, GOLD + "[ServerGames] " + GREEN + "* " + b.better + " has bet on " + b.tribute);
 		        }
 		        
 				return true;
@@ -44,7 +44,7 @@ public class CommandExec implements CommandExecutor {
 	                	int score = Integer.parseInt(args[0]);
 	                	
 	                	if(ServerGames.tributes.size()<= 3){
-	                		tell(player, RED + "[ServerGames] There must be at least 4 tributes to place a bet.");
+	                		tell(player, RED + "[ServerGames] There must be at least 4 tributes to bet.");
 	                		return true;
 	                	}
 	                	if(plugin.hasBet(player)){
@@ -52,7 +52,11 @@ public class CommandExec implements CommandExecutor {
 	                		return true;
 	                	}
 	                	if(plugin.getScore(player) - score < 0){
-	                		tell(player, RED + "[ServerGames] You don't have enough points to do this..");
+	                		tell(player, RED + "[ServerGames] You don't have enough points to do this.");
+	                		return true;
+	                	}
+	                	if(!plugin.isTribute(target)){
+	                		tell(player, RED + "[ServerGames] You can't bet on spectators.");
 	                		return true;
 	                	}
 	                	
@@ -291,6 +295,30 @@ public class CommandExec implements CommandExecutor {
 				return true;
 			}
 
+			//////////////// --------- MAP (Set map to be used in next game) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("map")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerGames] You do not have permission to do this.");
+					return true;
+				}
+				
+				if(!ServerGames.inNothing() && !ServerGames.inLobby()){
+					tell(player, RED + "[ServerGames] Cannot edit worlds while game is active, use /force to stop game.");
+					return true;
+				}
+				
+				String w = ServerGames.server.getWorld(args[0]).getName();
+
+				if(ServerGames.worlds.contains(w)){
+					ServerGames.current = w;
+					tell(player, GOLD + "[ServerGames] " + GREEN + "You're next game will now be in the world " + AQUA + w);
+					return true;
+				}else{
+					tell(player, GOLD + "[ServerGames] " + RED + "World is not in rotation, use /addworld <world_name> first.");
+					return true;
+				}
+			}
+
 			//////////////// --------- SETMIN (Set minimum amount of people to start game.) --------- //////////////////
 			if(cmd.getName().equalsIgnoreCase("setmin")){
 				if(!player.isOp()){
@@ -408,7 +436,7 @@ public class CommandExec implements CommandExecutor {
 			if(cmd.getName().equalsIgnoreCase("bets")){
 				System.out.println("[ServerGames] CURRENT STANDINGS:");
 		        for(Bet b: ServerGames.bets){
-		        	System.out.println("[ServerGames] * " + b.better.getName() + " has bet on " + b.tribute.getName());
+		        	System.out.println("[ServerGames] * " + b.better + " has bet on " + b.tribute);
 		        }
 		        
 				return true;
