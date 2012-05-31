@@ -15,13 +15,17 @@ public class Game extends CurrentState{
 	
 	public void run(){
 		if(time == 60 * 45){
-			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 45 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 45 minutes until deathmatch.");
 		}if(time == 60 * 30){
-			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 30 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 30 minutes until deathmatch.");
 		}if(time == 60 * 15){
-			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 15 minutes until deathmatch.");
 		}if(time == 60 * 5){
-			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 5 minutes remaining.");
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + GREEN + " 5 minutes until deathmatch.");
+		}if(time == 30){
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + RED + " 30 seconds until deathmatch.");
+		}if(time == 15){
+			ServerGames.server.broadcastMessage(GOLD + "[ServerGames]" + RED + " 15 seconds until deathmatch.");
 		}if(time <= 0){
 			plugin.startDeath();
 		}

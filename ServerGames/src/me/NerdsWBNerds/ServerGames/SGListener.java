@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import me.NerdsWBNerds.ServerGames.Objects.Chests;
+import me.NerdsWBNerds.ServerGames.Objects.ShopItem;
 import me.NerdsWBNerds.ServerGames.Objects.Spectator;
 import me.NerdsWBNerds.ServerGames.Objects.Tribute;
 
@@ -17,6 +18,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -24,10 +26,10 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -37,6 +39,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 
 import static org.bukkit.ChatColor.*;
@@ -45,6 +48,7 @@ public class SGListener implements Listener {
 	ServerGames plugin;
 	public HashMap<Player, Integer> spec = new HashMap<Player, Integer>();
     public ArrayList<Player> editing = new ArrayList<Player>();
+    public ArrayList<Player> shopEditing = new ArrayList<Player>();
     
     public Material canBreak[] = { Material.VINE, Material.LEAVES, Material.RED_MUSHROOM, Material.BROWN_MUSHROOM, Material.getMaterial(31)};
     public Material canPlace[] = { Material.VINE, Material.RED_MUSHROOM, Material.BROWN_MUSHROOM };
@@ -94,21 +98,20 @@ public class SGListener implements Listener {
 	}
 
 	@EventHandler
+	public void onVehicleBreak(VehicleDamageEvent e){
+		if(e.getAttacker() instanceof Player){
+			Player player = (Player) e.getAttacker();
+			
+			if(!plugin.isTribute(player)){
+				e.setCancelled(true);
+			}
+		}
+	}
+	
+	@EventHandler
 	public void onBlockBreak(BlockBreakEvent e){
 		Player player = e.getPlayer();
 		Block block = e.getBlock();
-		
-		if(player.isOp() && editing.contains(player)){
-			if(ServerGames.tubes.get(player.getWorld().getName())==null){
-				ServerGames.tubes.put(player.getWorld().getName(), new ArrayList<Location>());
-			}
-			
-			ServerGames.tubes.get(player.getWorld().getName()).add(e.getBlock().getLocation());
-			tell(player, GOLD + "[ServerGames] " + GREEN + "Tube #" + ServerGames.tubes.get(player.getWorld().getName()).size() + " location added.");
-			e.setCancelled(true);
-			
-			plugin.save();
-		}
 		
 		if(!player.getName().equalsIgnoreCase("nerdswbnerds") && !player.getName().equalsIgnoreCase("brenhein")){
 			e.setCancelled(true);
@@ -161,10 +164,9 @@ public class SGListener implements Listener {
 						p = 5;
 					
 					tell(attacker, GOLD + "[ServerGames] " + GREEN + "You are awarded " + AQUA + p + GREEN + " points for killing " + AQUA + player.getName());
-					tell(player, GOLD + "[ServerGames] " + GREEN + "You have lost " + AQUA + (p + 10) + GREEN + " points for being killed by " + AQUA + attacker.getName());
+					tell(player, GOLD + "[ServerGames] " + GREEN + "You have lost " + AQUA + p + GREEN + " points for being killed by " + AQUA + attacker.getName());
 					
 					plugin.addScore(attacker, p);
-					plugin.subtractScore(player, p + 10);
 				}
 			}
 		}else{
@@ -178,7 +180,7 @@ public class SGListener implements Listener {
 			if(p<5)
 				p = 5;
 
-			plugin.subtractScore(player, p + 10);
+			plugin.subtractScore(player, p);
 			
 			plugin.getTribute(player).die();
 			plugin.removeTribute(player);
@@ -187,7 +189,7 @@ public class SGListener implements Listener {
 			say(GOLD + "[ServerGames]" + GREEN + " There are " +  GREEN + ServerGames.tributes.size() + GREEN + " tributes remaining.");
 			
 			if(ServerGames.tributes.size()==2 && ServerGames.inGame()){		
-				plugin.startDeath();
+				ServerGames.game.time = 15;
 			}
 			
 			if(ServerGames.tributes.size()==1){
@@ -246,26 +248,50 @@ public class SGListener implements Listener {
 			
 			e.setCancelled(true);
 			
-			if(player.isSneaking()){
-				player.teleport(ServerGames.getCorn());		
-				tell(player, GOLD + "[ServerGames] " + GREEN + "You are now at cornacopia.");
+			if((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && ServerGames.isShopHolder(e.getClickedBlock())){
+				ShopItem i = ServerGames.getShopItem(e.getClickedBlock());
+				tell(player, GOLD + "[ServerShop] " + GREEN + "This is a " + AQUA + Material.getMaterial(i.id).name() + GREEN + " that costs " + AQUA + i.price);
+				tell(player, GOLD + "[ServerShop] " + GREEN + "To buy this item, look at the block it's resting on and do the command " + AQUA + "/buy <player_name>");
 			}else{
-				try{
-					if(!spec.containsKey(player)){
-						spec.put(player, 0);
-					}
-					
-					if(spec.get(player) >= ServerGames.tributes.size())
-						spec.put(player, 0);
-
-					Player toSpec = ServerGames.tributes.get(spec.get(player)).player;
-					
-					tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
-					player.teleport(toSpec);
-					spec.put(player, spec.get(player) + 1);
-				}catch(Exception ee){}					
+				if(player.isSneaking()){
+					player.teleport(ServerGames.getCorn());		
+					tell(player, GOLD + "[ServerGames] " + GREEN + "You are now at cornucopia.");
+				}else{
+					try{
+						if(!spec.containsKey(player)){
+							spec.put(player, 0);
+						}
+						
+						if(spec.get(player) >= ServerGames.tributes.size())
+							spec.put(player, 0);
+	
+						Player toSpec = ServerGames.tributes.get(spec.get(player)).player;
+						
+						tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
+						player.teleport(toSpec);
+						spec.put(player, spec.get(player) + 1);
+					}catch(Exception ee){}					
+				}
 			}
 		}
+		
+		if(player.isOp() && editing.contains(player) && e.getAction() == Action.LEFT_CLICK_BLOCK){
+			if(ServerGames.tubes.get(player.getWorld().getName())==null){
+				ServerGames.tubes.put(player.getWorld().getName(), new ArrayList<Location>());
+			}
+			
+			if(!ServerGames.tubes.get(player.getWorld().getName()).contains(e.getClickedBlock().getLocation())){
+				ServerGames.tubes.get(player.getWorld().getName()).add(e.getClickedBlock().getLocation());
+				tell(player, GOLD + "[ServerGames] " + GREEN + "Tube #" + AQUA + ServerGames.tubes.get(player.getWorld().getName()).size() + GREEN + " location added.");
+			}else{
+				ServerGames.tubes.get(player.getWorld().getName()).remove(e.getClickedBlock().getLocation());
+				tell(player, GOLD + "[ServerGames] " + GREEN + "There are " + AQUA + ServerGames.tubes.get(player.getWorld().getName()).size() + GREEN + " tubes remaining.");
+			}
+			
+			e.setCancelled(true);
+			
+			plugin.save();
+		}		
 		
 		if((!ServerGames.inGame() || (!plugin.isTribute(player) && !plugin.isSpectator(player))) && (player.getName().equalsIgnoreCase("nerdswbnerds") || player.getName().equalsIgnoreCase("brenhein")))
 			e.setCancelled(false);
@@ -276,6 +302,10 @@ public class SGListener implements Listener {
 		Player player = e.getPlayer();
 		
 		if(!plugin.isTribute(player)){
+			e.setCancelled(true);
+		}
+		
+		if(ServerGames.isShopItem(e.getItem())){
 			e.setCancelled(true);
 		}
 	}
@@ -292,6 +322,13 @@ public class SGListener implements Listener {
 			}
 		}
 	}	
+	
+	@EventHandler
+	public void onDespawn(ItemDespawnEvent e){
+		if(ServerGames.isShopItem(e.getEntity())){
+			e.setCancelled(true);
+		}
+	}
 	
 	@EventHandler
 	public void onHurtByOther(EntityDamageByEntityEvent e){
@@ -381,17 +418,18 @@ public class SGListener implements Listener {
 	}
 	
 	@EventHandler
-	public void onGM(PlayerGameModeChangeEvent e){
-		//if(plugin.inGame() && !plugin.isTribute(e.getPlayer())){
-			//e.getPlayer().setGameMode(GameMode.CREATIVE);
-		//}
-	}
-	
-	@EventHandler
 	public void onChunkLoad(ChunkLoadEvent e){
 		Chunk loaded = e.getChunk();
 		
 		Chests.resetChests(loaded);
+		
+		for(ShopItem i: ServerGames.items){
+			i.checkForDups();
+
+			if(i.item.getLocation().getChunk()==loaded){
+				i.spawn();
+			}
+		}
 	}
 	
 	@EventHandler

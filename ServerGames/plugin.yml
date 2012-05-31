@@ -45,7 +45,7 @@ commands:
       description: Set waiting spawn location.
       usage: /setwait
    setCorn:
-      description: Set cornacopia location.
+      description: Set cornucopia location.
       usage: /setcorn
    force:
       description: Force ending of game.
@@ -62,9 +62,33 @@ commands:
    delworld:
       description: Delete world from roation.
       usage: /delworld
-   see:
+   show:
       description: See a spectator.
-      usage: /see <player>
+      usage: /show <player>
    hide:
       description: Hide player.
       usage: /hide <player>
+   setshop:
+      description: Set shop location.
+      usage: /setshop
+   shop:
+      description: Edit a shop block.
+      usage: /shop <add|delete>
+   toshop:
+      description: Teleport to shop.
+      usage: /toshop
+   quit:
+      description: Teleport to shop.
+      usage: /toshop
+   join:
+      description: Teleport to shop.
+      usage: /toshop
+   clearshop:
+      description: Clear all shop items.
+      usage: /clearshop
+   buy:
+      description: Buy package for tribute.
+      usage: /buy <player_name>
+   redeem:
+      description: Redeem packages sent to you.
+      usage: /redeem

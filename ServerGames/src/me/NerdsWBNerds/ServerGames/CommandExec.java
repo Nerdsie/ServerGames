@@ -1,11 +1,18 @@
 package me.NerdsWBNerds.ServerGames;
 
 import static org.bukkit.ChatColor.*;
+
 import java.text.DecimalFormat;
 
 import me.NerdsWBNerds.ServerGames.Objects.Bet;
+import me.NerdsWBNerds.ServerGames.Objects.ShopItem;
+import me.NerdsWBNerds.ServerGames.Objects.Spectator;
+import me.NerdsWBNerds.ServerGames.Objects.Tribute;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
@@ -25,6 +32,34 @@ public class CommandExec implements CommandExecutor {
 			//////////////// -------------------------------------------- /////////////////
 			
 			Player player = (Player) sender;
+
+			//////////////// --------- BUY (Buy item for tribute) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("buy")){
+				Block b = player.getTargetBlock(null, 100);
+				
+				if(ServerGames.isShopHolder(b)){
+					ShopItem i = ServerGames.getShopItem(b);
+					
+					if(plugin.getScore(player) - i.price >= 0){
+						Player target = ServerGames.server.getPlayer(args[0]);
+						
+						if(target!=null && target.isOnline() && plugin.isTribute(target)){
+							ServerGames.packages.get(target.getName()).add(i);
+							plugin.subtractScore(player, i.price);
+							tell(target, GOLD + "[ServerShop] " + GREEN + "You have a " + AQUA + Material.getMaterial(i.id).name() + GREEN + " waiting. Use " + AQUA + "/redeem " + GREEN + "to get it.");
+							tell(player, GOLD + "[ServerShop] " + GREEN + "You have sent " + AQUA + target.getName() + GREEN + " a " + AQUA + Material.getMaterial(i.id).name());
+						}else{
+							tell(player, RED + "[ServerShop] Player is either not online or not a tribute.");			
+						}
+					}else{
+						tell(player, RED + "[ServerShop] You do not have enough points to buy this.");						
+					}
+				}else{
+					tell(player, RED + "[ServerShop] Not a shop block, look at the block the item you want to buy is resting on.");
+				}
+				
+				return true;
+			}
 
 			//////////////// --------- BETS (List all bets) --------- //////////////////
 			if(cmd.getName().equalsIgnoreCase("bets")){
@@ -103,8 +138,8 @@ public class CommandExec implements CommandExecutor {
 					return true;
 				}
 				
-				if(ServerGames.cornacopia==null){
-					tell(player, RED + "[ServerGames] You must have a cornacopia. Use /setcorn to set a spawn point.");
+				if(ServerGames.cornucopia==null){
+					tell(player, RED + "[ServerGames] You must have a cornucopia. Use /setcorn to set a spawn point.");
 					return true;
 				}
 				
@@ -168,14 +203,14 @@ public class CommandExec implements CommandExecutor {
 				return true;
 			}
 
-			//////////////// --------- SETCORN (Set cornacopia) --------- //////////////////
+			//////////////// --------- SETCORN (Set cornucopia) --------- //////////////////
 			if(cmd.getName().equalsIgnoreCase("setCorn")){
 				if(!player.isOp()){
 					tell(player, RED + "[ServerGames] You do not have permission to do this.");
 					return true;
 				}
 				
-				ServerGames.cornacopia.put(player.getWorld().getName(), toCenter(player.getLocation()));
+				ServerGames.cornucopia.put(player.getWorld().getName(), toCenter(player.getLocation()));
 				tell(player, GOLD + "[ServerGames]" + GREEN + " Cornacoptia set at your location.");
 				plugin.save();
 				return true;
@@ -187,8 +222,8 @@ public class CommandExec implements CommandExecutor {
 					tell(player, RED + "[ServerGames] You do not have permission to do this.");
 					return true;
 				}
-				
-				plugin.startDeath();
+
+				ServerGames.game.time = 15;
 				return true;
 			}
 
@@ -336,6 +371,206 @@ public class CommandExec implements CommandExecutor {
 					return true;
 				}
 			}
+			
+			//////////////// --------- SEE (See spectator) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("show")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerGames] You do not have permission to do this.");
+					return true;
+				}
+
+				if(args==null || args.length==0){
+					for(Spectator s: ServerGames.spectators){
+						player.showPlayer(s.player);
+					}
+					
+					tell(player, GOLD + "[ServerGames] " + GREEN + "Now showing all spectators.");
+					return true;
+				}
+				if(args.length==1){
+					if(plugin.isSpectator(ServerGames.server.getPlayer(args[0]))){
+						player.showPlayer(ServerGames.server.getPlayer(args[0]));
+						tell(player, GOLD + "[ServerGames] " + GREEN + "Now showing " + AQUA + ServerGames.server.getPlayer(args[0]).getName());
+						return true;
+					}else{
+						tell(player, RED + "[ServerGames] Non-spectators are already visible.");
+						return true;
+					}
+				}
+			}
+
+			//////////////// --------- HIDE (Hide spectator) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("hide")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerGames] You do not have permission to do this.");
+					return true;
+				}
+
+				if(args==null || args.length==0){
+					for(Spectator s: ServerGames.spectators){
+						player.hidePlayer(s.player);
+					}
+					
+					tell(player, GOLD + "[ServerGames] " + GREEN + "Now hiding all spectators.");
+				}
+				if(args.length==1){
+					if(plugin.isSpectator(ServerGames.server.getPlayer(args[0]))){
+						player.hidePlayer(ServerGames.server.getPlayer(args[0]));
+						tell(player, GOLD + "[ServerGames] " + GREEN + "Now hiding " + AQUA + ServerGames.server.getPlayer(args[0]).getName());
+					}else{
+						tell(player, RED + "[ServerGames] You can't hide non-spectators.");
+						return true;
+					}
+				}
+			}
+
+			//////////////// --------- QUIT (Quit current game) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("quit")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerGames] You do not have permission to do this.");
+					return true;
+				}
+
+				plugin.removeSpectator(player);
+				plugin.removeTribute(player);
+				
+				for(Player p: ServerGames.server.getOnlinePlayers()){
+					if(p!=player){
+						p.hidePlayer(player);
+					}
+				}
+				
+				tell(player, GOLD + "[ServerGames] " + GREEN + "You have quit the game.");
+				return true;
+			}
+
+			//////////////// --------- JOIN (Join current game) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("join")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerGames] You do not have permission to do this.");
+					return true;
+				}
+
+				if(ServerGames.inGame() || ServerGames.inDeath() || ServerGames.inDone() || ServerGames.inSetup()){
+					plugin.removeTribute(player);
+					ServerGames.spectators.add(new Spectator(player));		
+					player.setCompassTarget(ServerGames.getCorn());
+					player.setGameMode(GameMode.CREATIVE);
+					
+					tell(player, DARK_AQUA + "You are a spectator, others cannot see yoy, click to teleport to different people. You can also use /bet");
+				}else{
+					plugin.removeSpectator(player);
+					ServerGames.tributes.add(new Tribute(player));
+					tell(player, DARK_AQUA + "You are a tribute, you must try to survive, be the last one standing to win!.");
+				}
+				
+				return true;
+			}
+			
+			//////////////// --------- SETSHOP (Set the sop location) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("setshop")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerShop] You do not have permission to do this.");
+					return true;
+				}
+
+				ServerGames.shop = toCenter(player.getLocation());
+				tell(player, GOLD + "[ServerShop] " + GREEN + "Shop set at you location.");
+				
+				return true;
+			}
+
+			//////////////// --------- TOSHOP (Teleport to shop) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("toshop")){
+				if(ServerGames.shop == null){
+					tell(player, RED + "[ServerShop] Shop does not exist.");
+				}else{
+					player.teleport(ServerGames.shop);
+					tell(player, GOLD + "[ServerShop] " + GREEN + "You are now at the shop.");
+				}
+				
+				return true;
+			}
+
+			//////////////// --------- CLEARSHOP (Delete all items from shop) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("clearshop")){
+				if(!player.isOp()){
+					tell(player, RED + "[ServerShop] You do not have permission to do this.");
+					return true;
+				}
+				
+				if(ServerGames.items.isEmpty()){
+					tell(player, RED + "[ServerShop] No items to clear.");
+					return true;
+				}
+				
+				for(ShopItem i: ServerGames.items){
+					i.item.remove();
+					ServerGames.items.remove(i);
+				}
+				
+				tell(player, GOLD + "[ServerShop] " + GREEN + "All shop items now removed.");
+				return true;
+			}
+
+			//////////////// --------- SHOP (Edit a shop) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("shop")){
+				if(args == null || args.length == 0){
+					if(ServerGames.shop == null){
+						tell(player, RED + "[ServerShop] Shop does not exist.");
+						return true;
+					}else{
+						player.teleport(ServerGames.shop);
+						tell(player, GOLD + "[ServerShop] " + GREEN + "You are now at the shop.");
+						return true;
+					}
+				}
+				
+				if(!player.isOp()){
+					tell(player, RED + "[ServerShop] You do not have permission to do this.");
+					return true;
+				}
+
+				if(args.length==1){
+					if(args[0].equalsIgnoreCase("del")){
+						Block b = player.getTargetBlock(null, 100);
+						for(ShopItem i: ServerGames.items){
+							if(i.holder.equals(b)){
+								System.out.println("4");
+								tell(player, GOLD + "[ServerShop] " + GREEN + "Shop item has been removed.");
+								i.item.remove();
+								ServerGames.items.remove(i);
+							}
+						}
+						return true;
+					}
+				}
+				
+				if(args.length==3){
+					if(args[0].equalsIgnoreCase("set")){
+						Block b = player.getTargetBlock(null, 100);
+						
+						if(!ServerGames.isShopHolder(b)){
+							int id = Integer.parseInt(args[1]);
+							int price = Integer.parseInt(args[2]);
+							ServerGames.items.add(new ShopItem(b, id, price));
+							tell(player, GOLD + "[ServerShop] " + AQUA + Material.getMaterial(id).name() + GREEN + " added to shop for " + AQUA + price + GREEN + " points.");
+						}else{
+							for(ShopItem i: ServerGames.items){
+								if(i.holder==b){
+									i.item.remove();
+									i.id = Integer.parseInt(args[1]);
+									i.price = Integer.parseInt(args[2]);
+									i.spawn();
+									tell(player, GOLD + "[ServerShop] " + GREEN + "Item changed to " + AQUA + Material.getMaterial(i.id).name() + GREEN + " for " + AQUA + i.price + GREEN + " points.");
+								}
+							}
+						}
+					}
+					
+					return true;
+				}
+			}
 		}else{
 			//////////////// -------------------------------------------- /////////////////
 			//////////////// ----------- CONSOLE COMMANDS --------------- /////////////////
@@ -395,7 +630,7 @@ public class CommandExec implements CommandExecutor {
 
 			//////////////// --------- DEATHMATCH (Force deathmatch) --------- //////////////////
 			if(cmd.getName().equalsIgnoreCase("dm")){
-				plugin.startDeath();
+				ServerGames.game.time = 15;
 				return true;
 			}
 
@@ -413,8 +648,8 @@ public class CommandExec implements CommandExecutor {
 					return true;
 				}
 				
-				if(ServerGames.cornacopia==null){
-					System.out.println("[ServerGames] You must have a cornacopia. Use /setcorn to set a spawn point.");
+				if(ServerGames.cornucopia==null){
+					System.out.println("[ServerGames] You must have a cornucopia. Use /setcorn to set a spawn point.");
 					return true;
 				}
 				
