@@ -1036,7 +1036,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public static boolean isShopHolder(Block b){
 		for(ShopItem i: items){
-			if(i.holder.getLocation() == b.getLocation()){
+			if(i.holder.getLocation().equals(b.getLocation())){
 				return true;
 			}
 		}
@@ -1046,7 +1046,7 @@ public class ServerGames extends JavaPlugin implements Listener{
 	
 	public static ShopItem getShopItem(Block b){
 		for(ShopItem i: items){
-			if(i.holder.getLocation() == b.getLocation()){
+			if(i.holder.getLocation().equals(b.getLocation())){
 				return i;
 			}
 		}

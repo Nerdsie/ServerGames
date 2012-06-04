@@ -44,7 +44,7 @@ public class ShopItem {
 	public void checkForDups(){
 		Chunk c = item.getLocation().getChunk();
 		for(Entity e:c.getEntities()){
-			if(e.getLocation().getBlock().equals(item.getLocation().getBlock()) && e.getType() == EntityType.DROPPED_ITEM && !e.equals(item)){
+			if(e.getLocation().getBlock().equals(item.getLocation().getBlock()) && e.getType() == EntityType.DROPPED_ITEM && e.getEntityId()!=item.getEntityId()){
 				e.remove();
 			}
 		}

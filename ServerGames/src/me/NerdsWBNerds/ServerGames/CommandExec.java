@@ -3,6 +3,7 @@ package me.NerdsWBNerds.ServerGames;
 import static org.bukkit.ChatColor.*;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 import me.NerdsWBNerds.ServerGames.Objects.Bet;
 import me.NerdsWBNerds.ServerGames.Objects.ShopItem;
@@ -15,6 +16,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class CommandExec implements CommandExecutor {
 	ServerGames plugin;
@@ -34,6 +36,25 @@ public class CommandExec implements CommandExecutor {
 			Player player = (Player) sender;
 
 			//////////////// --------- BUY (Buy item for tribute) --------- //////////////////
+			if(cmd.getName().equalsIgnoreCase("redeem")){
+				if(ServerGames.packages.containsKey(player.getName())){
+					if(!ServerGames.packages.get(player.getName()).isEmpty()){
+						for(ShopItem i : ServerGames.packages.get(player.getName())){
+							player.getInventory().addItem(new ItemStack(i.id, i.amount));
+						}
+						tell(player, GOLD + "[ServerShop] " + GREEN + "You have redeemed your packages.");
+						ServerGames.packages.put(player.getName(), new ArrayList<ShopItem>());
+					}else{
+						tell(player, RED + "[ServerShop] No packages to redeem.");		
+					}
+				}else{
+					tell(player, RED + "[ServerShop] No packages to redeem.");		
+				}
+				
+				return true;
+			}
+			
+			//////////////// --------- BUY (Buy item for tribute) --------- //////////////////
 			if(cmd.getName().equalsIgnoreCase("buy")){
 				Block b = player.getTargetBlock(null, 100);
 				
@@ -44,6 +65,10 @@ public class CommandExec implements CommandExecutor {
 						Player target = ServerGames.server.getPlayer(args[0]);
 						
 						if(target!=null && target.isOnline() && plugin.isTribute(target)){
+							if(ServerGames.packages.get(target.getName())==null){
+								ServerGames.packages.put(target.getName(), new ArrayList<ShopItem>());
+							}
+							
 							ServerGames.packages.get(target.getName()).add(i);
 							plugin.subtractScore(player, i.price);
 							tell(target, GOLD + "[ServerShop] " + GREEN + "You have a " + AQUA + Material.getMaterial(i.id).name() + GREEN + " waiting. Use " + AQUA + "/redeem " + GREEN + "to get it.");

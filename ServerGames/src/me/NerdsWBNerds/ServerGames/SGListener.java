@@ -242,36 +242,42 @@ public class SGListener implements Listener {
 			e.setCancelled(true);
 		}
 		
+		if(!plugin.isTribute(player)){
+			System.out.println("!");
+			if((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && ServerGames.isShopHolder(e.getClickedBlock())){
+
+				System.out.println("!");e.setCancelled(true);
+				ShopItem i = ServerGames.getShopItem(e.getClickedBlock());
+				tell(player, GOLD + "[ServerShop] " + GREEN + "This is a " + AQUA + Material.getMaterial(i.id).name() + GREEN + " that costs " + AQUA + i.price);
+				tell(player, GOLD + "[ServerShop] " + GREEN + "To buy this, use the command " + AQUA + "/buy <player_name>");
+				return;
+			}
+		}
+		
 		if(plugin.isSpectator(player)){
 			if(player.getGameMode()==GameMode.SURVIVAL)
 				player.setGameMode(GameMode.CREATIVE);
-			
+		
 			e.setCancelled(true);
-			
-			if((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && ServerGames.isShopHolder(e.getClickedBlock())){
-				ShopItem i = ServerGames.getShopItem(e.getClickedBlock());
-				tell(player, GOLD + "[ServerShop] " + GREEN + "This is a " + AQUA + Material.getMaterial(i.id).name() + GREEN + " that costs " + AQUA + i.price);
-				tell(player, GOLD + "[ServerShop] " + GREEN + "To buy this item, look at the block it's resting on and do the command " + AQUA + "/buy <player_name>");
+		
+			if(player.isSneaking()){
+				player.teleport(ServerGames.getCorn());		
+				tell(player, GOLD + "[ServerGames] " + GREEN + "You are now at cornucopia.");
 			}else{
-				if(player.isSneaking()){
-					player.teleport(ServerGames.getCorn());		
-					tell(player, GOLD + "[ServerGames] " + GREEN + "You are now at cornucopia.");
-				}else{
-					try{
-						if(!spec.containsKey(player)){
-							spec.put(player, 0);
-						}
+				try{
+					if(!spec.containsKey(player)){
+						spec.put(player, 0);
+					}
+					
+					if(spec.get(player) >= ServerGames.tributes.size())
+						spec.put(player, 0);
 						
-						if(spec.get(player) >= ServerGames.tributes.size())
-							spec.put(player, 0);
-	
-						Player toSpec = ServerGames.tributes.get(spec.get(player)).player;
-						
-						tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
-						player.teleport(toSpec);
-						spec.put(player, spec.get(player) + 1);
-					}catch(Exception ee){}					
-				}
+					Player toSpec = ServerGames.tributes.get(spec.get(player)).player;
+					
+					tell(player, GOLD + "[ServerGames] " + GREEN + "Now spectating " + AQUA + toSpec.getName());
+					player.teleport(toSpec);
+					spec.put(player, spec.get(player) + 1);
+				}catch(Exception ee){}					
 			}
 		}
 		
@@ -425,10 +431,6 @@ public class SGListener implements Listener {
 		
 		for(ShopItem i: ServerGames.items){
 			i.checkForDups();
-
-			if(i.item.getLocation().getChunk()==loaded){
-				i.spawn();
-			}
 		}
 	}
 	
